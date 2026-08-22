@@ -4,11 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\PurchaseItem;
 class Purchase extends Model
 {
     use HasFactory;
 
+    protected $table = 'purchases';
     protected $fillable = [
         'purchase_number',
         'supplier_id',
@@ -37,4 +41,13 @@ class Purchase extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+
+    // 🟢 បន្ថែម Relation នេះដើម្បីដោះស្រាយ Error របស់អ្នក
+    public function purchaseItems(): HasMany
+    {
+        return $this->hasMany(PurchaseItem::class, 'purchase_id', 'id');
+    }
+
+  
 }

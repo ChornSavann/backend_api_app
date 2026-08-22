@@ -85,6 +85,14 @@ class AppServiceProvider extends ServiceProvider
                 \App\Services\ReportService::class
             );
             
+            $this->app->bind(
+                \App\RepositoryInterface\AuthInterface::class,
+                \App\Repositories\AuthRepository::class
+            );
+            $this->app->bind(
+                \App\Services\Interface\AuthServiceInterface::class,
+                \App\Services\AuthService::class
+            );
     }
 
     /**

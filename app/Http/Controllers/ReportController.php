@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use App\Services\ReportService;
 use App\Services\Interface\ReportServiceInterface;
 use Illuminate\Http\JsonResponse;
+use App\Models\Customer;
+use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\Product;
+use App\Models\Purchase;
 
 class ReportController extends Controller
 {
@@ -45,6 +50,16 @@ class ReportController extends Controller
         ]);
     }
 
+    public function WeeklyReport(Request $request):JsonResponse
+    {
+        $filters = $request->all();
+        $weeklyReport = $this->reportService->WeeklyReport($filters);
+        return response()->json([
+            'success' => true,
+            'data' => $weeklyReport
+        ]);
+    }
+
     public function MonthlyReport(Request $request):JsonResponse
     {
         $filters = $request->all();
@@ -81,6 +96,81 @@ class ReportController extends Controller
         return response()->json([
             'success' => true,
             'data' => $saleReport
+        ]);
+    }
+
+    public function historyReport(Request $request): JsonResponse
+    {
+       
+        $data = $request->all();
+        $historyReport = $this->reportService->historyReport($data);
+        return response()->json([
+            'success' => true,
+            'data' => $historyReport
+        ]);
+    }
+   
+   
+    public function topSellingProducts(Request $request): JsonResponse
+    {
+        $data = $request->all();
+        $result = $this->reportService->topSellingProducts($data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
+    public function lowStockReport(): JsonResponse
+    {
+        $result = $this->reportService->lowStockReport();
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
+    public function purchaseHistoryReport(Request $request): JsonResponse
+    {
+        $data = $request->all();
+        $result = $this->reportService->purchaseHistoryReport($data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
+    public function purchaseHistoryReportbyid($purchaseId, Request $request): JsonResponse
+    {
+        $data = $request->all();
+        $result = $this->reportService->purchaseHistoryReportbyid($purchaseId, $data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
+    public function customerHistoryReport($customerId, Request $request): JsonResponse
+    {
+        $data = $request->all();
+        $result = $this->reportService->customerHistoryReport($customerId, $data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
+    public function getAllcustomers(): JsonResponse
+    {
+        $result = $this->reportService->getAllcustomers();
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
         ]);
     }
 }

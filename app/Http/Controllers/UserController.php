@@ -50,7 +50,7 @@ class UserController extends Controller
         }
     }
 
-   public function store(Request $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',

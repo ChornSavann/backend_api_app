@@ -9,4 +9,12 @@ interface ReportServiceInterface
     public function YearlyReport($filters);
     public function getReportById($id);
     public function saleReport($data);
+    public function historyReport($data);
+    public function topSellingProducts($data);
+    public function lowStockReport($data);
+    public function purchaseHistoryReport($data);
+    public function purchaseHistoryReportbyid($purchaseId, $data);
+    public function customerHistoryReport($customerId, $data);
+    public function getAllcustomers();
+    public function WeeklyReport($filters);
 }

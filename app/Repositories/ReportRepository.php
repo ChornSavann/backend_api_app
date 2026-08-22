@@ -4,12 +4,15 @@ namespace App\Repositories;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use App\RepositoryInterface\ReportInterface;
+use App\Models\OrderDetail;
+use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\Customer;
+use Illuminate\Support\Facades\Log;
 
 class ReportRepository implements ReportInterface
 {
-    /**
-     * ទាញយកទិន្នន័យរបាយការណ៍ផ្អែកលើ Filter ផ្សេងៗ (កាលបរិច្ឆេទជាដើម)
-     */
+    
     public function getReportData($filters)
     {
         $query = Order::with(['customer', 'user', 'details', 'payment']);
@@ -21,9 +24,7 @@ class ReportRepository implements ReportInterface
         return $query->latest()->get();
     }
 
-    /**
-     * ទាញយកសង្ខេបរបាយការណ៍ (Total Orders, Revenue, Discount, Tax)
-     */
+    
     public function getReportSummary($filters)
     {
         $query = Order::query();
@@ -40,31 +41,35 @@ class ReportRepository implements ReportInterface
         ];
     }
 
-    /**
-     * បង្កើតរបាយការណ៍ប្រចាំថ្ងៃ (Daily Report)
-     */
+    
+    
     public function DailyReport($filters)
     {
-        $query = Order::query();
+        $query = Order::with(['customer', 'payment', 'details.product']);
 
-        if (!empty($filters['month']) && !empty($filters['year'])) {
-            $query->whereYear('created_at', $filters['year'])
-                  ->whereMonth('created_at', $filters['month']);
+        if (!empty($filters['date'])) {
+            $query->whereDate('created_at', $filters['date']);
+        } else {
+            $query->whereDate('created_at', now()); 
         }
 
-        return $query->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('COUNT(*) as total_orders'),
-                DB::raw('SUM(total_amount) as total_revenue')
-            )
-            ->groupBy('date')
-            ->orderBy('date', 'ASC')
-            ->get();
+        return $query->orderBy('created_at', 'DESC')->get();
     }
 
-    /**
-     * បង្កើតរបាយការណ៍ប្រចាំខែ (Monthly Report)
-     */
+    public function WeeklyReport($filters)
+    {
+        $query = Order::with(['customer', 'payment', 'details.product']);
+
+        if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+            $query->whereBetween('created_at', [$filters['start_date'], $filters['end_date']]);
+        } else {
+            $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+        }
+
+        return $query->orderBy('created_at', 'DESC')->get();
+    }
+
+   
     public function MonthlyReport($filters)
     {
         $query = Order::query();
@@ -83,9 +88,7 @@ class ReportRepository implements ReportInterface
             ->get();
     }
 
-    /**
-     * បង្កើតរបាយការណ៍ប្រចាំឆ្នាំ (Yearly Report)
-     */
+
     public function YearlyReport($filters)
     {
         return Order::select(
@@ -128,4 +131,107 @@ class ReportRepository implements ReportInterface
 
         return $query->latest()->get();
     }
+
+   
+    public function historyReport($data)
+    {
+        
+        $query = Order::with(['details.product', 'payment', 'customer', 'user']);
+
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            $query->whereBetween('created_at', [$data['start_date'], $data['end_date']]);
+        }
+
+        if (!empty($data['customer_id'])) {
+            $query->where('customer_id', $data['customer_id']);
+        }
+       
+        return $query->latest()->get(); 
+    }
+
+
+
+    public function topSellingProducts($data)
+    {
+        $limit = $data['limit'] ?? 6; 
+
+        return OrderDetail::with('product') 
+            ->select(
+                'product_id', 
+                'product_name', 
+                DB::raw('SUM(quantity) as total_quantity_sold'), 
+                DB::raw('SUM(total_price) as total_revenue')
+            )
+            ->groupBy('product_id', 'product_name')
+            ->orderByDesc('total_quantity_sold')
+            ->limit($limit)
+            ->get();
+    }
+    
+    public function lowStockReport($data = [])
+    {
+        $query = Product::with(['category', 'brand', 'unit']);
+        if (isset($data['use_alert_column']) && $data['use_alert_column'] == true) {
+            $query->whereColumn('stock_quantity', '<=', 'alert_quantity');
+        } else {
+        
+            $limitStock = $data['limit_stock'] ?? 10;
+            $query->where('stock_quantity', '<=', $limitStock);
+        }
+
+        if (!empty($data['category_id'])) {
+            $query->where('category_id', $data['category_id']);
+        }
+
+        return $query->get();
+    }
+
+  
+    public function purchaseHistoryReport($data)
+    {
+        $query = Purchase::with(['supplier', 'user', 'purchaseItems.product']);
+
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            $query->whereBetween('created_at', [$data['start_date'], $data['end_date']]);
+        }
+
+        if (!empty($data['supplier_id'])) {
+            $query->where('supplier_id', $data['supplier_id']);
+        }
+
+        return $query->latest()->get();
+    }
+
+    public function purchaseHistoryReportbyid($purchaseId, $data)
+    {
+        $query = Purchase::with(['supplier', 'user', 'purchaseItems.product'])
+            ->where('id', $purchaseId);
+
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            $query->whereBetween('created_at', [$data['start_date'], $data['end_date']]);
+        }
+
+        return $query->first();
+    }
+
+   
+    public function customerHistoryReport($customerId, $data)
+    {
+        $query = Order::with(['details.product', 'payment', 'user'])
+            ->where('customer_id', $customerId);
+
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            $query->whereBetween('created_at', [$data['start_date'], $data['end_date']]);
+        }
+
+        return $query->latest()->get();
+    }
+
+    public function getAllcustomers()
+    {
+        return Customer::withSum('orders', 'total_amount') 
+            ->withCount('orders')                    
+            ->get();
+    }
+   
 }
