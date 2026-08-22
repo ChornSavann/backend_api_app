@@ -12,6 +12,31 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ReportController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\AuthController;
+
+
+
+// Public route for login
+Route::post('/login-user', [AuthController::class, 'login']);
+Route::get('/users', [AuthController::class, 'index']);
+
+Route::post('user/register', [AuthController::class, 'register']);
+
+// Example of a protected route requiring the generated token
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
+    
+});
+
+
+
 Route::get('/categories', [Categorycontroller::class, 'index']);
 Route::get('/categories/{id}', [Categorycontroller::class, 'show']);
 Route::post('/categories', [Categorycontroller::class, 'store']);
@@ -26,7 +51,7 @@ Route::post('/products/{id}', [ProductController::class, 'update']);
 Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 Route::get('/products/category/{category_id}', [ProductController::class, 'getProductsByCategoryId']);
 // Route::get('/products/id}', [ProductController::class, 'getProductsByid']);
-Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
+// Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
 
 Route::get('/brands', [BrandController::class, 'index']);
 Route::get('/brands/{id}', [BrandController::class, 'show']);
@@ -121,8 +146,20 @@ Route::prefix('reports')->group(function () {
     Route::get('/', [ReportController::class, 'getReportData']);
     Route::get('/summary', [ReportController::class, 'getReportSummary']);
     Route::get('/daily', [ReportController::class, 'DailyReport']);
+    route::get('/weekly', [ReportController::class, 'WeeklyReport']);
     Route::get('/monthly', [ReportController::class, 'MonthlyReport']);
     Route::get('/yearly', [ReportController::class, 'YearlyReport']);
     Route::get('/sales', [ReportController::class, 'saleReport']);
+    Route::get('/history', [ReportController::class, 'historyReport']);
+    Route::get('/sales', [ReportController::class, 'saleReport']);
+    Route::get('/history', [ReportController::class, 'historyReport']);
+    Route::get('customers/history', [ReportController::class, 'getAllcustomers']);
+    Route::get('/low-stock', [ReportController::class, 'lowStockReport']);
+    Route::get('/top-selling', [ReportController::class, 'topSellingProducts']);
+    Route::get('/purchases', [ReportController::class, 'purchaseHistoryReport']);
+    Route::get('/customers', [ReportController::class, 'getAllcustomers']);
+    Route::get('/customers/{customerId}/history', [ReportController::class, 'customerHistoryReport']);
+    Route::get('/purchases/{purchaseId}', [ReportController::class, 'purchaseHistoryReportbyid']);
     Route::get('/{id}', [ReportController::class, 'getReportById']);
 });
+

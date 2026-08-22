@@ -80,6 +80,7 @@ class OrderService implements OrderServiceInterface
                     'name'    => $data['customer_name'] ?? 'Guest', 
                     'email'   => $data['customer_email'] ?? ('guest_' . time() . '@example.com'),
                     'address' => $data['customer_address'] ?? null,
+                    'points'   => $data['customer_point'] ?? 1,
                 ]
             );
 
