@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             
             // Foreign Keys (កែតម្រូវឈ្មោះតារាងទៅតាម Project របស់អ្នក ឧទាហរណ៍ categories, brands, units)
-            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('category')->onDelete('cascade');
             $table->foreignId('brand_id')->constrained('brands')->onDelete('cascade');
             $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
             
