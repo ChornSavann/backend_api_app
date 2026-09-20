@@ -25,7 +25,7 @@ class BrandController extends Controller
     }
 
     
-    public function create()
+    public function create():JsonResponse
     {
        $this->brandService->createBrand($data);
         return response()->json([

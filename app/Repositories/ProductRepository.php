@@ -37,6 +37,7 @@ class ProductRepository implements ProductInterface
         return Product::with('brand')->get()->pluck('brand')->unique();
     }
 
+
     public function getProductById($id)
     {
         return Product::with(['category', 'brand', 'unit'])->findOrFail($id);
@@ -95,5 +96,15 @@ class ProductRepository implements ProductInterface
             return $product->delete();
         }
         return false;
+    }
+
+    public function getBrandById($id)
+    {
+        return Product::where('brand_id', $id)->get();
+    }
+
+    public function getCategoryById($id)
+    {
+        return Product::where('category_id', $id)->get();
     }
 }

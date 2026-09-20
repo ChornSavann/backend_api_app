@@ -13,7 +13,7 @@ class BrandRepository implements BrandInterface
 
     public function getAllBrands()
     {
-        return $this->brand->all();
+        return $this->brand->withCount('products')->get();
     }
 
     public function getBrandById($id)

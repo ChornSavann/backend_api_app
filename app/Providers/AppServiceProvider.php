@@ -93,6 +93,30 @@ class AppServiceProvider extends ServiceProvider
                 \App\Services\Interface\AuthServiceInterface::class,
                 \App\Services\AuthService::class
             );
+            $this->app->bind(
+                \App\RepositoryInterface\StoreInterface::class,
+                \App\Repositories\StoreRepository::class
+            );
+            $this->app->bind(
+                \App\Services\Interface\StoreServiceInterface::class,
+                \App\Services\StoreService::class
+            );
+            $this->app->bind(
+                \App\RepositoryInterface\ExpenseInterface::class,
+                \App\Repositories\ExpenseRepository::class
+            );
+            $this->app->bind(
+                \App\Services\Interface\ExpenseServiceInterface::class,
+                \App\Services\ExpenseService::class
+            );
+            $this->app->bind(
+                \App\RepositoryInterface\ExpenseTypeInterface::class,
+                \App\Repositories\ExpenseTypeRepository::class
+            );
+            $this->app->bind(
+                \App\Services\Interface\ExpenseTypeServiceInterface::class,
+                \App\Services\ExpenseTypeService::class
+            );
     }
 
     /**

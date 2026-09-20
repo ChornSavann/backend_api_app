@@ -11,6 +11,13 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\Purchase;
+use App\Models\Supplier;
+use App\Models\SupplierOrder;
+use App\Models\SupplierOrderDetail;
+use Illuminate\Support\Facades\DB;
+use App\Models\Expense;
+use App\Models\ExpenseType;
+use Carbon\Carbon;
 
 class ReportController extends Controller
 {
@@ -20,7 +27,7 @@ class ReportController extends Controller
         $this->reportService = $reportService;
     }
 
-    public function getReportData(Request $request):JsonResponse
+    public function getReportData(Request $request): JsonResponse
     {
         $filters = $request->all();
         $reportData = $this->reportService->getReportData($filters);
@@ -30,7 +37,7 @@ class ReportController extends Controller
         ]);
     }
 
-    public function getReportSummary(Request $request):JsonResponse
+    public function getReportSummary(Request $request): JsonResponse
     {
         $filters = $request->all();
         $reportSummary = $this->reportService->getReportSummary($filters);
@@ -40,7 +47,7 @@ class ReportController extends Controller
         ]);
     }
 
-    public function DailyReport(Request $request):JsonResponse
+    public function DailyReport(Request $request): JsonResponse
     {
         $filters = $request->all();
         $dailyReport = $this->reportService->DailyReport($filters);
@@ -50,7 +57,7 @@ class ReportController extends Controller
         ]);
     }
 
-    public function WeeklyReport(Request $request):JsonResponse
+    public function WeeklyReport(Request $request): JsonResponse
     {
         $filters = $request->all();
         $weeklyReport = $this->reportService->WeeklyReport($filters);
@@ -60,7 +67,7 @@ class ReportController extends Controller
         ]);
     }
 
-    public function MonthlyReport(Request $request):JsonResponse
+    public function MonthlyReport(Request $request): JsonResponse
     {
         $filters = $request->all();
         $monthlyReport = $this->reportService->MonthlyReport($filters);
@@ -70,7 +77,7 @@ class ReportController extends Controller
         ]);
     }
 
-    public function YearlyReport(Request $request):JsonResponse
+    public function YearlyReport(Request $request): JsonResponse
     {
         $filters = $request->all();
         $yearlyReport = $this->reportService->YearlyReport($filters);
@@ -80,7 +87,7 @@ class ReportController extends Controller
         ]);
     }
 
-    public function getReportById($id):JsonResponse
+    public function getReportById($id): JsonResponse
     {
         $report = $this->reportService->getReportById($id);
         return response()->json([
@@ -88,8 +95,8 @@ class ReportController extends Controller
             'data' => $report
         ]);
     }
-    
-    public function saleReport(Request $request):JsonResponse
+
+    public function saleReport(Request $request): JsonResponse
     {
         $data = $request->all();
         $saleReport = $this->reportService->saleReport($data);
@@ -101,7 +108,7 @@ class ReportController extends Controller
 
     public function historyReport(Request $request): JsonResponse
     {
-       
+
         $data = $request->all();
         $historyReport = $this->reportService->historyReport($data);
         return response()->json([
@@ -109,8 +116,8 @@ class ReportController extends Controller
             'data' => $historyReport
         ]);
     }
-   
-   
+
+
     public function topSellingProducts(Request $request): JsonResponse
     {
         $data = $request->all();
@@ -122,13 +129,19 @@ class ReportController extends Controller
         ]);
     }
 
-    public function lowStockReport(): JsonResponse
+    // public function lowStockReport($data): JsonResponse
+    // {
+    //     $result = $this->reportService->lowStockReport([$data = []]);
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $result
+    //     ]);
+    // }
+    public function lowStockReport(Request $request): JsonResponse
     {
-        $result = $this->reportService->lowStockReport();
-        return response()->json([
-            'success' => true,
-            'data' => $result
-        ]);
+        $filters = $request->all();
+        $result = $this->reportService->lowStockReport($filters); // ហៅ Service
+        return response()->json(['success' => true, 'data' => $result]);
     }
 
     public function purchaseHistoryReport(Request $request): JsonResponse
@@ -171,6 +184,29 @@ class ReportController extends Controller
         return response()->json([
             'success' => true,
             'data' => $result
+        ]);
+    }
+
+    public function totalSalesReport(): JsonResponse
+    {
+        $result = $this->reportService->totalSalesReport();
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
+    
+    public function getFinancialReport(Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $data = $this->reportService->getFinancialReportData($startDate, $endDate);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
         ]);
     }
 }

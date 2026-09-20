@@ -24,19 +24,47 @@ class AuthService implements AuthServiceInterface
         return $this->authRepository->getAllUsers();
     }
 
+    // public function login(string $email, string $password): array
+    // {
+    //     $user = $this->authRepository->findByEmail($email);
+
+    //     if (!$user || !Hash::check($password, $user->password)) {
+    //         throw ValidationException::withMessages([
+    //             'email' => ['The Email and password credentials are incorrect.'],
+    //             'password' => ['The Email and password credentials are incorrect.'],    
+    //         ]);
+    //     }
+
+    //     $token = $user->createToken('login_token')->plainTextToken;
+
+    //     return ['token' => $token, 'user' => $user];
+    // }
+
     public function login(string $email, string $password): array
     {
-        $user = $this->authRepository->findByEmail($email);
 
-        if (!$user || !Hash::check($password, $user->password)) {
+        $user = $this->authRepository->findByEmail($email);
+        if (!$user) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => ['The email address you entered is incorrect.'],
+            ]);
+        }
+
+        if (!Hash::check($password, $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['The password you entered is incorrect.'],
             ]);
         }
 
         $token = $user->createToken('login_token')->plainTextToken;
 
-        return ['token' => $token, 'user' => $user];
+        // Load store មកជាមួយ user តែម្តង (ធានាថា User ស្ថិតក្នុង Model មាន relation with store)
+        // $user->load('store');
+
+        return [
+            'token' => $token,
+            'user' => $user
+        ];
     }
 
     public function register(array $userDetails, ?UploadedFile $image): array

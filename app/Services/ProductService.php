@@ -57,4 +57,13 @@ class ProductService
     {
         return $this->productRepository->deleteProduct($id);
     }
+    public function getBrandById($id)
+    {
+        return $this->productRepository->getBrandById($id);
+    }
+
+    public function getCategoryById($id)
+    {
+        return $this->productRepository->getCategoryById($id);
+    }
 }
