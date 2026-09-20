@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Brand extends Model
 {
     protected $table = 'brands';
+     protected $appends = ['image_url'];
 
     protected $fillable = [
         'name',
@@ -16,6 +17,19 @@ class Brand extends Model
         'created_at',
         'updated_at'
     ];
+
+   
+    public function getImageUrlAttribute()
+    {
+        if (!$this->logo) {
+            return null;
+        }
+        
+        if (str_starts_with($this->logo, 'http')) {
+            return $this->logo;
+        }
+        return asset($this->logo);
+    }
 
     public function products()
     {

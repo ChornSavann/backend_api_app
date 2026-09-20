@@ -41,6 +41,31 @@ class AuthController extends Controller
             'user' => $result['user']
         ], 200);
     }
+    
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //         'password' => 'required',
+    //     ]);
+
+    //     $result = $this->authService->login($request->email, $request->password);
+
+    //     // 🟢 สมมติว่า $result['user'] មាន relation ជាមួយ store 
+    //     // ឬអ្នកអាចទាញយក store ផ្ទាល់: $store = $result['user']->store;
+    //     $store = $result['user']->store ?? null; // អាស្រ័យលើ Database relation របស់អ្នក
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'token' => $result['token'],
+    //         'user' => $result['user'],
+    //         'store' => $store ? [                   // 👈 ថែម Key 'store' នេះចូល
+    //             'id' => $store->id,
+    //             'name' => $store->name,
+    //             'logo' => $store->logo,
+    //         ] : null
+    //     ], 200);
+    // }
 
     public function register(Request $request)
     {
@@ -53,7 +78,7 @@ class AuthController extends Controller
         ]);
 
         $result = $this->authService->register(
-            $request->all(), 
+            $request->all(),
             $request->file('image')
         );
 

@@ -11,7 +11,7 @@ class Product extends Model
     use HasFactory;
 
     protected $table = 'products';
-   
+
     protected $fillable = [
         'name',
         'slug',
@@ -25,10 +25,25 @@ class Product extends Model
         'stock_quantity',
         'alert_quantity',
         'image',
+        'description',
         'is_active',
     ];
 
+    protected $appends = ['image_url'];
 
+    // 🟢 បង្កើត Accessor
+    public function getImageUrlAttribute()
+    {
+        if (!$this->image) {
+            return null;
+        }
+        
+        if (str_starts_with($this->image, 'http')) {
+            return $this->image;
+        }
+        
+        return asset($this->image);
+    }
 
     // Relationships
     public function category()

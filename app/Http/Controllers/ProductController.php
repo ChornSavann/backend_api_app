@@ -48,6 +48,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string|max:1000',
             'sku'            => 'required|string|unique:products,sku',
             'barcode'        => 'nullable|string|unique:products,barcode',
             'cost_price'     => 'required|numeric|min:0',
@@ -75,7 +76,6 @@ class ProductController extends Controller
                 'message' => 'Product created successfully',
                 'data'    => $product
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -84,15 +84,26 @@ class ProductController extends Controller
             ], 500);
         }
     }
-    public function getCategorybyId(): JsonResponse
+
+
+    public function getCategorybyId($id): JsonResponse
     {
-        $categories = $this->productService->getCategorybyId();
+        $categories = $this->productService->getCategorybyId($id);
         return response()->json([
             'success' => true,
             'data' => $categories
         ], 200);
     }
 
+    public function getProductsByBrandId($id): JsonResponse
+    {
+        $products = $this->productService->getBrandById($id);
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ], 200);
+    }
+    
     public function getUnits(): JsonResponse
     {
         $units = $this->productService->getUnits();
@@ -101,7 +112,7 @@ class ProductController extends Controller
             'data' => $units
         ], 200);
     }
-     
+
     public function getBrands(): JsonResponse
     {
         $brands = $this->productService->getBrands();
@@ -110,7 +121,7 @@ class ProductController extends Controller
             'data' => $brands
         ], 200);
     }
-    
+
     public function getProductsByCategoryId($category_id): JsonResponse
     {
 
@@ -130,6 +141,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name'           => 'sometimes|required|string|max:255',
+            'description'    => 'nullable|string|max:1000',
             'sku'            => 'sometimes|required|string|unique:products,sku,' . $id,
             'barcode'        => 'nullable|string|unique:products,barcode,' . $id,
             'cost_price'     => 'sometimes|required|numeric|min:0',
@@ -160,7 +172,6 @@ class ProductController extends Controller
                 'message' => 'Product updated successfully',
                 'data'    => $product
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -185,10 +196,4 @@ class ProductController extends Controller
             ], 500);
         }
     }
-
-    
-
-    
 }
-
-

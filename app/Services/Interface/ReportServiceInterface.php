@@ -17,4 +17,6 @@ interface ReportServiceInterface
     public function customerHistoryReport($customerId, $data);
     public function getAllcustomers();
     public function WeeklyReport($filters);
+    public function totalSalesReport();
+    public function getFinancialReportData($startDate, $endDate);
 }

@@ -1,10 +1,12 @@
 <?php
+
 namespace App\RepositoryInterface;
 
 interface ReportInterface
 {
     public function getReportData($filters);
     public function getReportSummary($filters);
+    public function totalSalesReport();
     public function DailyReport($filters);
     public function MonthlyReport($filters);
     public function YearlyReport($filters);
@@ -17,5 +19,8 @@ interface ReportInterface
     public function purchaseHistoryReportbyid($purchaseId, $data);
     public function customerHistoryReport($customerId, $data);
     public function getAllcustomers();
-   
+    public function getTotalIncome($startDate, $endDate);
+    public function getGeneralExpenses($startDate, $endDate);
+    public function getPurchaseExpenses($startDate, $endDate);
+    public function getExpenseBreakdown($startDate, $endDate);
 }

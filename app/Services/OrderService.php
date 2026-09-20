@@ -238,7 +238,7 @@ class OrderService implements OrderServiceInterface
         $chatId = env('TELEGRAM_CHAT_ID');
 
         if (!$token || !$chatId) {
-            \Log::warning("Telegram Token or Chat ID is missing.");
+            Log::warning("Telegram Token or Chat ID is missing.");
             return;
         }
 
@@ -277,10 +277,10 @@ class OrderService implements OrderServiceInterface
                          ]);
 
             if ($response->failed()) {
-                \Log::error("Telegram API Error: " . $response->body());
+                Log::error("Telegram API Error: " . $response->body());
             }
         } catch (\Exception $e) {
-            \Log::error("Telegram Exception: " . $e->getMessage());
+            Log::error("Telegram Exception: " . $e->getMessage());
         }
     }
 }
