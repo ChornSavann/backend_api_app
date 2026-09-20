@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('category', function (Blueprint $table) {
+        Schema::table('categories', function (Blueprint $table) {
             $table->string('image')->nullable()->after('description');
         });
     }
 
     public function down(): void
     {
-        Schema::table('category', function (Blueprint $table) {
+        Schema::table('categories', function (Blueprint $table) {
             $table->dropColumn('image');
         });
     }
