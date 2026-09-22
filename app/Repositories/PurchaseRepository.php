@@ -31,7 +31,7 @@ class PurchaseRepository implements \App\RepositoryInterface\PurchaseRepositoryI
 
     public function getAllPurchases()
     {
-        return \App\Models\Purchase::with(['user','supplier', 'items'])->get();
+        return \App\Models\Purchase::with(['user','supplier', 'items'])->latest()->get();
     }
 
     public function deletePurchase(int $purchaseId)

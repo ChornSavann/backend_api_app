@@ -12,7 +12,7 @@ class ProductRepository implements ProductInterface
 {
     public function getAllProducts()
     {
-        return Product::with(['category', 'brand', 'unit'])->get();
+        return Product::with(['category', 'brand', 'unit'])->latest()->get();
     }
 
     public function CountProducts()

@@ -32,7 +32,7 @@ class UserService implements UserServiceInterface
         if ($image) {
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('users'), $imageName);
-            
+
             $userDetails['image'] = 'users/' . $imageName;
         }
 
@@ -48,8 +48,15 @@ class UserService implements UserServiceInterface
         // } else {
         //     unset($userDetails['password']);
         // }
+        $existingUser = User::find($id);
+        if (!$existingUser) {
+            return [
+                'success' => false,
+                'message' => 'User not found in the database.',
+            ];
+        }
         if ($image) {
-        
+
             $existingUser = User::find($id);
             if ($existingUser && $existingUser->image && file_exists(public_path($existingUser->image))) {
                 @unlink(public_path($existingUser->image));
@@ -57,7 +64,7 @@ class UserService implements UserServiceInterface
 
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('users'), $imageName);
-            
+
             $userDetails['image'] = 'users/' . $imageName;
         }
 
@@ -67,7 +74,7 @@ class UserService implements UserServiceInterface
     public function deleteUser($id)
     {
         $user = User::find($id);
-        
+
         if (!$user) {
             return false;
         }

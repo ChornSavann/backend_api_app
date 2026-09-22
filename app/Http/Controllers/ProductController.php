@@ -103,7 +103,7 @@ class ProductController extends Controller
             'data' => $products
         ], 200);
     }
-    
+
     public function getUnits(): JsonResponse
     {
         $units = $this->productService->getUnits();
@@ -179,6 +179,21 @@ class ProductController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function lowStockProducts(Request $request):jsonResponse
+    {
+    
+        $threshold = $request->input('threshold', 10);
+        $lowStockItems = Product::where('stock_quantity', '<=', $threshold)
+            ->orderBy('stock_quantity', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'count' => $lowStockItems->count(),
+            'data' => $lowStockItems
+        ], 200);
     }
 
     public function destroy($id): JsonResponse

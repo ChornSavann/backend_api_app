@@ -43,13 +43,15 @@ Route::post('/categories/{id}', [Categorycontroller::class, 'update']);
 Route::delete('/categories/{id}', [Categorycontroller::class, 'destroy']);
 
 Route::get('/products/count', [ProductController::class, 'getProductCount']);
+Route::get('/products/low-stock', [ProductController::class, 'lowStockProducts']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::post('/products', [ProductController::class, 'store']);
 Route::post('/products/{id}', [ProductController::class, 'update']);
 Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
 Route::get('/products/category/{category_id}', [ProductController::class, 'getCategorybyId']);
-route::get('/products/brand/{brand_id}', [ProductController::class, 'getProductsByBrandId']);
+Route::get('/products/brand/{brand_id}', [ProductController::class, 'getProductsByBrandId']);
 // Route::get('/products/id}', [ProductController::class, 'getProductsByid']);
 // Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
 
