@@ -13,4 +13,6 @@ interface ProductInterface
     public function CountProducts();
     public function getBrandById($id);
     public function getCategoryById($id);
+    public function getByBarcode($barcode);
+     public function getProductsWithMinQty();
 }

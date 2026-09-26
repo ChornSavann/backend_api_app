@@ -18,6 +18,11 @@ class ProductService
         return $this->productRepository->CountProducts();
     }
 
+    public function getProductsWithMinQty()
+    {
+        return $this->productRepository->getProductsWithMinQty();
+    }
+
     public function getAllProducts()
     {
         return $this->productRepository->getAllProducts();
@@ -65,5 +70,10 @@ class ProductService
     public function getCategoryById($id)
     {
         return $this->productRepository->getCategoryById($id);
+    }
+
+    public function getProductByBarcode($barcode)
+    {
+        return $this->productRepository->getByBarcode($barcode);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use App\Services\Interface\AuthServiceInterface;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -26,6 +27,7 @@ class AuthController extends Controller
         ], 200);
     }
 
+
     public function login(Request $request)
     {
         $request->validate([
@@ -33,51 +35,29 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $result = $this->authService->login($request->email, $request->password);
+        try {
 
-        return response()->json([
-            'status' => 'success',
-            'token' => $result['token'],
-            'user' => $result['user']
-        ], 200);
+            $result = $this->authService->login($request->email, $request->password);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'token' => $result['token'],
+                'user' => $result['user']
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
     }
-    
-    // public function login(Request $request)
-    // {
-    //     $request->validate([
-    //         'email' => 'required|email',
-    //         'password' => 'required',
-    //     ]);
 
-    //     $result = $this->authService->login($request->email, $request->password);
-
-    //     // 🟢 สมมติว่า $result['user'] មាន relation ជាមួយ store 
-    //     // ឬអ្នកអាចទាញយក store ផ្ទាល់: $store = $result['user']->store;
-    //     $store = $result['user']->store ?? null; // អាស្រ័យលើ Database relation របស់អ្នក
-
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'token' => $result['token'],
-    //         'user' => $result['user'],
-    //         'store' => $store ? [                   // 👈 ថែម Key 'store' នេះចូល
-    //             'id' => $store->id,
-    //             'name' => $store->name,
-    //             'logo' => $store->logo,
-    //         ] : null
-    //     ], 200);
-    // }
-
-    public function register(Request $request)
+    public function createUser(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|unique:users',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
-        ]);
-
-        $result = $this->authService->register(
+        
+       $result = $this->authService->register(
             $request->all(),
             $request->file('image')
         );
@@ -89,6 +69,7 @@ class AuthController extends Controller
         ], 201);
     }
 
+ 
     public function refreshToken(Request $request)
     {
         $newToken = $this->authService->refreshToken($request->user());

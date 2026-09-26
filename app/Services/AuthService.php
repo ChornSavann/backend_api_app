@@ -24,22 +24,6 @@ class AuthService implements AuthServiceInterface
         return $this->authRepository->getAllUsers();
     }
 
-    // public function login(string $email, string $password): array
-    // {
-    //     $user = $this->authRepository->findByEmail($email);
-
-    //     if (!$user || !Hash::check($password, $user->password)) {
-    //         throw ValidationException::withMessages([
-    //             'email' => ['The Email and password credentials are incorrect.'],
-    //             'password' => ['The Email and password credentials are incorrect.'],    
-    //         ]);
-    //     }
-
-    //     $token = $user->createToken('login_token')->plainTextToken;
-
-    //     return ['token' => $token, 'user' => $user];
-    // }
-
     public function login(string $email, string $password): array
     {
 
@@ -57,16 +41,31 @@ class AuthService implements AuthServiceInterface
         }
 
         $token = $user->createToken('login_token')->plainTextToken;
-
-        // Load store មកជាមួយ user តែម្តង (ធានាថា User ស្ថិតក្នុង Model មាន relation with store)
-        // $user->load('store');
-
         return [
             'token' => $token,
             'user' => $user
         ];
     }
 
+    // public function register(array $userDetails, ?UploadedFile $image): array
+    // {
+    //     $imagePath = null;
+    //     if ($image) {
+    //         $imagePath = $image->store('users', 'public');
+    //     }
+
+    //     $user = $this->authRepository->createUser([
+    //         'name' => $userDetails['name'],
+    //         'email' => $userDetails['email'],
+    //         'phone' => $userDetails['phone'] ?? null,
+    //         'image' => $imagePath,
+    //         'password' => Hash::make($userDetails['password']),
+    //     ]);
+
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return ['token' => $token, 'user' => $user];
+    // }
     public function register(array $userDetails, ?UploadedFile $image): array
     {
         $imagePath = null;
@@ -86,15 +85,22 @@ class AuthService implements AuthServiceInterface
 
         return ['token' => $token, 'user' => $user];
     }
-
+    
     public function refreshToken(User $user): string
     {
-        $user->currentAccessToken()->delete();
+        $token = $user->currentAccessToken();
+        if ($token) {
+            \Laravel\Sanctum\PersonalAccessToken::where('id', $token->id)->delete();
+        }
+
         return $user->createToken('login_token')->plainTextToken;
     }
 
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        $token = $user->currentAccessToken();
+        if ($token) {
+            \Laravel\Sanctum\PersonalAccessToken::where('id', $token->id)->delete();
+        }
     }
 }

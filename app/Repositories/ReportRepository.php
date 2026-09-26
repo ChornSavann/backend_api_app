@@ -43,10 +43,11 @@ class ReportRepository implements ReportInterface
     }
 
 
-
     public function DailyReport($filters)
     {
         $query = Order::with(['customer', 'payment', 'details.product']);
+
+        $query->where('status', '!=', 'cancelled');
 
         if (!empty($filters['date'])) {
             $query->whereDate('created_at', $filters['date']);
@@ -168,7 +169,7 @@ class ReportRepository implements ReportInterface
             ->get();
     }
 
-    
+
 
     public function lowStockReport($data = [])
     {
@@ -249,6 +250,8 @@ class ReportRepository implements ReportInterface
             'total_customers' => $totalCustomers,
         ];
     }
+
+
     //  Profit & lose
     public function getTotalIncome($startDate, $endDate)
     {
@@ -332,4 +335,24 @@ class ReportRepository implements ReportInterface
             ->groupBy('category.id', 'category.name', 'category.image')
             ->get();
     }
+
+    // // 1. យកតែចំណាយទូទៅសុទ្ធសាធ (ពីតារាង expenses)
+    // public function getGeneralExpenses($startDate, $endDate)
+    // {
+    //     $query = DB::table('expenses'); // 👈 ត្រូវដាកើតចេញពីតារាង expenses ផ្ទាល់
+    //     if ($startDate && $endDate) {
+    //         $query->whereBetween('date', [$startDate, $endDate]);
+    //     }
+    //     return $query->sum('amount'); // ឬ column ទឹកប្រាក់ចំណាយ
+    // }
+
+    // // 2. យកតែចំណាយទិញស្តុក (ពីតារាង purchases)
+    // public function getPurchaseExpenses($startDate, $endDate)
+    // {
+    //     $query = DB::table('purchases'); // 👈 ត្រូវដាកើតចេញពីតារាង purchases ផ្ទាល់
+    //     if ($startDate && $endDate) {
+    //         $query->whereBetween('purchase_date', [$startDate, $endDate]);
+    //     }
+    //     return $query->sum('grand_total'); // ឬ column សរុបនៃការទិញ
+    // }
 }

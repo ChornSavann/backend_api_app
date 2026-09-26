@@ -15,11 +15,20 @@ class ProductRepository implements ProductInterface
         return Product::with(['category', 'brand', 'unit'])->latest()->get();
     }
 
+    public function getProductsWithMinQty()
+    {
+        
+        return Product::with(['category', 'brand', 'unit'])
+            ->where('stock_quantity', '>=', 10)
+            ->latest()
+            ->get();
+    }
+
     public function CountProducts()
     {
         return Product::count();
     }
-    
+
     public function getAllCategories()
     {
         return Product::with('category')->get()->pluck('category')->unique();
@@ -27,13 +36,13 @@ class ProductRepository implements ProductInterface
 
     public function getUnits()
     {
-        // ប្រើ unit() តាម Model Relationship របស់អ្នក
+
         return Product::with('unit')->get()->pluck('unit')->unique();
     }
 
     public function getBrands()
     {
-        // ប្រើ brand() តាម Model Relationship របស់អ្នក
+
         return Product::with('brand')->get()->pluck('brand')->unique();
     }
 
@@ -42,7 +51,7 @@ class ProductRepository implements ProductInterface
     {
         return Product::with(['category', 'brand', 'unit'])->findOrFail($id);
     }
-    
+
     private function uploadImage($file, $name)
     {
         $imageName = time() . '_' . Str::slug($name) . '.' . $file->extension();
@@ -61,7 +70,7 @@ class ProductRepository implements ProductInterface
         }
         return Product::create($data);
     }
-    
+
 
     public function updateProduct($id, array $data)
     {
@@ -86,7 +95,7 @@ class ProductRepository implements ProductInterface
         $product = Product::find($id);
 
         if ($product) {
-            
+
             if ($product->image) {
                 $imagePath = public_path($product->image);
                 if (File::exists($imagePath)) {
@@ -106,5 +115,10 @@ class ProductRepository implements ProductInterface
     public function getCategoryById($id)
     {
         return Product::where('category_id', $id)->get();
+    }
+
+    public function getByBarcode($barcode)
+    {
+        return Product::where('barcode', $barcode)->first();
     }
 }

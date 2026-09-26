@@ -34,6 +34,15 @@ class ProductController extends Controller
         ], 200);
     }
 
+    public function getproductMinQty()
+    {
+        $product = $this->productService->getProductsWithMinQty();
+        return response()->json([
+            'success' => true,
+            'data' => $product
+        ], 200);
+    }
+
     public function show($id): JsonResponse
     {
         $product = $this->productService->getProductById($id);
@@ -181,9 +190,9 @@ class ProductController extends Controller
         }
     }
 
-    public function lowStockProducts(Request $request):jsonResponse
+    public function lowStockProducts(Request $request): jsonResponse
     {
-    
+
         $threshold = $request->input('threshold', 10);
         $lowStockItems = Product::where('stock_quantity', '<=', $threshold)
             ->orderBy('stock_quantity', 'asc')
@@ -208,6 +217,32 @@ class ProductController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error deleting product: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getByBarcode($barcode)
+    {
+        try {
+            $product = $this->productService->getProductByBarcode($barcode);
+
+            if ($product) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Product found successfully',
+                    'data' => $product
+                ], 200);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found with this barcode'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server Error: ' . $e->getMessage()
             ], 500);
         }
     }

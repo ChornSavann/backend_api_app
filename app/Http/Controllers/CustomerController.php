@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Services\Interface\CustomerServiceInterface;
+use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 
 class CustomerController extends Controller
@@ -14,15 +15,28 @@ class CustomerController extends Controller
     {
         $this->customerService = $customerService;
     }
-    public function index():JsonResponse
+    public function index(): JsonResponse
     {
         $customers = $this->customerService->getAllCustomers();
         return response()->json([
             'success' => true,
             'data' => $customers
-        ],200);
+        ], 200);
     }
 
+    public function getCustomerByPhone(string $phone): JsonResponse
+    {
+        $customer = $this->customerService->getCustomerByPhone($phone);
+
+        if (!$customer) {
+            return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $customer
+        ], 200);
+    }
 
     public function store(Request $request)
     {
@@ -43,11 +57,11 @@ class CustomerController extends Controller
         ], 201);
     }
 
-   
+
     public function show($id)
     {
         $customer = $this->customerService->getCustomerById($id);
-        
+
         if (!$customer) {
             return response()->json(['success' => false, 'message' => 'Not found'], 404);
         }
@@ -58,14 +72,13 @@ class CustomerController extends Controller
         ], 200);
     }
 
-    
-    public function edit(Customer $customer,$id)
+
+    public function edit(Customer $customer, $id)
     {
-      $customer = $this->customerService->getCustomerById($id);
+        $customer = $this->customerService->getCustomerById($id);
         if (!$customer) {
             return response()->json(['success' => false, 'message' => 'Not found'], 404);
-        }
-        else {
+        } else {
             return response()->json([
                 'success' => true,
                 'data' => $customer
@@ -73,13 +86,13 @@ class CustomerController extends Controller
         }
     }
 
-   
-    
+
+
     public function update(Request $request, $id)
     {
-    
+
         $customer = $this->customerService->getCustomerById($id);
-        
+
         if (!$customer) {
             return response()->json(['success' => false, 'message' => 'Customer not found'], 404);
         }
@@ -100,7 +113,7 @@ class CustomerController extends Controller
             'data' => $updatedCustomer
         ], 200);
     }
-   
+
     public function destroy($id)
     {
         $this->customerService->deleteCustomer($id);
@@ -108,6 +121,35 @@ class CustomerController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Customer deleted successfully.'
+        ], 200);
+    }
+
+    public function search(Request $request)
+    {
+        $name = $request->query('name');
+        $customers = Customer::where('name', 'LIKE', "%{$name}%")->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $customers
+        ]);
+    }
+
+    public function getCustomerOrders($id): JsonResponse
+    {
+        $data = $this->customerService->getCustomerWithOrders($id);
+
+        if (!$data) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Customer not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'customer' => $data['customer'],
+            'orders' => $data['orders']
         ], 200);
     }
 }

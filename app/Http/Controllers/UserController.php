@@ -68,7 +68,7 @@ class UserController extends Controller
             "success" => true,
             "message" => "User created successfully.",
             "data" => $user
-        ], 201);
+        ], 200);
     }
 
     
@@ -228,7 +228,7 @@ class UserController extends Controller
     public function handleGoogleApiLogin(Request $request)
     {
         $request->validate([
-            'access_token' => 'required|string', // Token ដែលបានពី Flutter google_sign_in
+            'access_token' => 'required|string', 
         ]);
 
         try {

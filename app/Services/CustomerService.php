@@ -33,4 +33,24 @@ class CustomerService implements \App\Services\Interface\CustomerServiceInterfac
     {
         return $this->customerRepository->deleteCustomer($id);
     }
+
+    public function getCustomerByPhone($phone)
+    {
+        return $this->customerRepository->getCustomerByPhone($phone);
+    }
+
+    public function getCustomerWithOrders($id)
+    {
+        $customer = $this->customerRepository->getCustomerById($id);
+
+        if (!$customer) {
+            return null; 
+        }
+        $orders = $this->customerRepository->getOrdersByCustomerId($id);
+
+        return [
+            'customer' => $customer,
+            'orders' => $orders
+        ];
+    }
 }

@@ -11,7 +11,7 @@ return new class extends Migration
             $table->id();
             $table->string('order_number')->unique();
             $table->unsignedBigInteger('customer_id')->nullable();
-            $table->unsignedBigInteger('user_id'); // អ្នកគិតលុយ (Cashier/User)
+            $table->unsignedBigInteger('user_id');
             $table->decimal('subtotal', 12, 2);
             $table->decimal('discount_amount', 12, 2)->default(0.00);
             $table->decimal('tax_amount', 12, 2)->default(0.00);

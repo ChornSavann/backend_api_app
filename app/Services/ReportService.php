@@ -96,19 +96,14 @@ class ReportService implements \App\Services\Interface\ReportServiceInterface
     {
         // 1. គណនាចំណូលសរុប
         $totalIncome = $this->reportRepository->getTotalIncome($startDate, $endDate);
-
         // 2. ក. គណនាចំណាយទូទៅ
         $generalExpenses = $this->reportRepository->getGeneralExpenses($startDate, $endDate);
-
         // 2. ខ. គណនាការចំណាយទិញទំនិញចូល
         $purchaseExpenses = $this->reportRepository->getPurchaseExpenses($startDate, $endDate);
-
         // 3. ចំណាយសរុប
         $totalExpense = $generalExpenses + $purchaseExpenses;
-
         // 4. ប្រាក់ចំណេញសុទ្ធ
         $netProfit = $totalIncome - $totalExpense;
-
         // 5. ចំណាយលម្អិតតាមប្រភេទ
         $expenseBreakdown = $this->reportRepository->getExpenseBreakdown($startDate, $endDate);
 

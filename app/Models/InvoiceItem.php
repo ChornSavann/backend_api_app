@@ -9,8 +9,6 @@ class InvoiceItem extends Model
     use HasFactory;
 
     protected $table = 'invoice_items';
-
-    // បើក្នុងតារាងមិនមាន cột updated_at ទេ អាចកំណត់ timestamps = false ត្រង់នេះបាន
     public $timestamps = false; 
 
     protected $fillable = [

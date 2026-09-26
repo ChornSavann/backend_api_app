@@ -19,9 +19,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\ExpenseTypeController;
 
 Route::post('/login-user', [AuthController::class, 'login']);
-Route::get('/users', [AuthController::class, 'index']);
-
-Route::post('user/register', [AuthController::class, 'register']);
+Route::get('auth/users', [AuthController::class, 'index']);
+Route::post('/auth/create-user', [AuthController::class, 'createUser']);
 
 // protected route requiring the generated token
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -34,8 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
 });
 
-
-
 Route::get('/categories', [Categorycontroller::class, 'index']);
 Route::get('/categories/{id}', [Categorycontroller::class, 'show']);
 Route::post('/categories', [Categorycontroller::class, 'store']);
@@ -44,6 +41,7 @@ Route::delete('/categories/{id}', [Categorycontroller::class, 'destroy']);
 
 Route::get('/products/count', [ProductController::class, 'getProductCount']);
 Route::get('/products/low-stock', [ProductController::class, 'lowStockProducts']);
+Route::get('/products/min-qty', [ProductController::class, 'getproductMinQty']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::post('/products', [ProductController::class, 'store']);
@@ -52,6 +50,7 @@ Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
 Route::get('/products/category/{category_id}', [ProductController::class, 'getCategorybyId']);
 Route::get('/products/brand/{brand_id}', [ProductController::class, 'getProductsByBrandId']);
+Route::get('/products/barcode/{barcode}', [ProductController::class, 'getByBarcode']);
 // Route::get('/products/id}', [ProductController::class, 'getProductsByid']);
 // Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
 
@@ -79,36 +78,45 @@ Route::prefix('expenses')->group(function () {
     Route::post('/update/{id}', [\App\Http\Controllers\ExpenseController::class, 'update']);
     Route::delete('/delete/{id}', [\App\Http\Controllers\ExpenseController::class, 'destroy']);
 });
-
+//units
 Route::get('/units', [\App\Http\Controllers\UnitsController::class, 'index']);
 Route::post('/units', [\App\Http\Controllers\UnitsController::class, 'store']);
 Route::get('/units/{id}', [\App\Http\Controllers\UnitsController::class, 'show']);
 Route::get('/units/{id}/edit', [\App\Http\Controllers\UnitsController::class, 'edit']);
 Route::post('/units/{id}', [\App\Http\Controllers\UnitsController::class, 'update']);
 Route::delete('/units/{id}', [\App\Http\Controllers\UnitsController::class, 'destroy']);
-
+//customers
 Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index']);
 Route::post('/customers', [\App\Http\Controllers\CustomerController::class, 'store']);
+Route::get('/customers/phone/{phone}', [CustomerController::class, 'getCustomerByPhone']);
+Route::get('/customers/search', [CustomerController::class, 'search']);
 Route::get('/customers/{id}', [\App\Http\Controllers\CustomerController::class, 'show']);
 Route::get('/customers/{id}/edit', [\App\Http\Controllers\CustomerController::class, 'edit']);
 Route::post('/customers/{id}', [\App\Http\Controllers\CustomerController::class, 'update']);
 Route::delete('/customers/{id}', [\App\Http\Controllers\CustomerController::class, 'destroy']);
-
+Route::get('/customers/{id}/order', [CustomerController::class, 'getCustomerOrders']);
+//orders
 Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index']);
+Route::get('/orders/delivery-orders', [OrderController::class, 'getDeliveryOrders']);
 Route::post('/orders', [\App\Http\Controllers\OrderController::class, 'store']);
-Route::get('/orders/{id}', [\App\Http\Controllers\OrderController::class, 'show']);
+Route::patch('/orders/deliveries/{id}/status', [OrderController::class, 'updateDeliveryStatus']);
+Route::post('/orders/{id}/complete-delivery', [OrderController::class, 'completeDelivery']);
+Route::post('/orders/cancel-order/{id}',[OrderController::class,'updateDeliveryPaymentAndStatus']);
+Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::get('/orders/{id}/edit', [\App\Http\Controllers\OrderController::class, 'edit']);
 Route::post('/orders/{id}', [\App\Http\Controllers\OrderController::class, 'update']);
 Route::delete('/orders/{id}', [\App\Http\Controllers\OrderController::class, 'destroy']);
+
 Route::get('/orders/{id}/invoice', [OrderController::class, 'showInvoice']);
 
+//purchases
 Route::get('/purchases', [\App\Http\Controllers\PurchaseController::class, 'index']);
 Route::post('/purchases', [\App\Http\Controllers\PurchaseController::class, 'store']);
 Route::get('/purchases/{id}', [\App\Http\Controllers\PurchaseController::class, 'show']);
 Route::get('/purchases/{id}/edit', [\App\Http\Controllers\PurchaseController::class, 'edit']);
 Route::post('/purchases/{id}', [\App\Http\Controllers\PurchaseController::class, 'update']);
 Route::delete('/purchases/{id}', [\App\Http\Controllers\PurchaseController::class, 'destroy']);
-
+//suppliers
 Route::get('/suppliers', [\App\Http\Controllers\SupplierController::class, 'index']);
 Route::post('/suppliers', [\App\Http\Controllers\SupplierController::class, 'store']);
 Route::get('/suppliers/{id}', [\App\Http\Controllers\SupplierController::class, 'show']);
@@ -122,16 +130,24 @@ Route::get('/users/{id}', [UserController::class, 'show']);
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/users/{id}', [UserController::class, 'update']);
 
-
+//Users
 Route::middleware('auth:sanctum')->put('/profile/change-password', [UserController::class, 'changePassword']);
 Route::post('/forgot-password', [UserController::class, 'forgotPassword']);
 Route::post('/update-password', [UserController::class, 'updatePassword']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/auth/google', [UserController::class, 'handleGoogleApiLogin']);
+//store
+Route::prefix('store')->group(function () {
+    Route::get('/', [StoreController::class, 'index']);
+    Route::post('/create', [StoreController::class, 'store']);
+    Route::get('/edit/{id}', [StoreController::class, 'edit']);
+    Route::post('/update/{id}', [StoreController::class, 'update']);
+    Route::delete('/destroy/{id}', [StoreController::class, 'destroy']);
+});
 
 
-
+//Chart bot testing
 Route::get('/test-telegram', function () {
     $token = env('TELEGRAM_BOT_TOKEN');
     $chatId = env('TELEGRAM_CHAT_ID');
@@ -171,12 +187,4 @@ Route::prefix('reports')->group(function () {
     
 });
 
-//store
-Route::prefix('store')->group(function () {
-    Route::get('/', [StoreController::class, 'index']);
-    Route::post('/create', [StoreController::class, 'store']);
-    Route::get('/edit/{id}', [StoreController::class, 'edit']);
-    Route::post('/update/{id}', [StoreController::class, 'update']);
-    Route::delete('/destroy/{id}', [StoreController::class, 'destroy']);
-});
 

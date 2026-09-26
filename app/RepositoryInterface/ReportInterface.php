@@ -23,4 +23,5 @@ interface ReportInterface
     public function getGeneralExpenses($startDate, $endDate);
     public function getPurchaseExpenses($startDate, $endDate);
     public function getExpenseBreakdown($startDate, $endDate);
+    
 }
