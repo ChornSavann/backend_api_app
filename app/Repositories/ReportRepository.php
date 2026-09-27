@@ -270,6 +270,27 @@ class ReportRepository implements ReportInterface
         }
         return $query->sum('amount');
     }
+    // public function getGeneralExpenses($startDate, $endDate)
+    // {
+    //     // ១. បូកសរុបការចំណាយទូទៅពីตาราง Expense
+    //     $expenseQuery = Expense::query();
+    //     if ($startDate && $endDate) {
+    //         $expenseQuery->whereBetween('expense_date', [$startDate, $endDate]);
+    //     }
+    //     $totalExpenses = $expenseQuery->sum('amount');
+    //     $deliveryQuery = \App\Models\Delivery::query()
+    //         ->whereIn('status', ['success', 'completed']);
+
+    //     if ($startDate && $endDate) {
+    //         // ផ្អែកលើ created_at ក្នុងตาราง deliveries
+    //         $deliveryQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+    //     }
+
+    //     $totalDeliveryFees = $deliveryQuery->sum('delivery_fee');
+
+    //     // ៣. បូកបញ្ចូលគ្នារវាង Expense និង Delivery Fee
+    //     return $totalExpenses + $totalDeliveryFees;
+    // }
 
     public function getPurchaseExpenses($startDate, $endDate)
     {

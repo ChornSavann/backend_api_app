@@ -4,16 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ExpenseType;
+
 class Expense extends Model
 {
     protected $table = "expense";
     protected $fillable = [
-        'expense_type_id', 
-        'user_id', 
-        'amount', 
+        'expense_type_id',
+        'user_id',
+        'amount',
         'payment_method',
-        'reference_no', 
-        'expense_date', 
+        'reference_no',
+        'expense_date',
         'note'
     ];
 
@@ -27,5 +28,9 @@ class Expense extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    public function delivery()
+    {
+        return $this->hasOne(Delivery::class, 'expense_id'); // ឬតាម Foreign Key ដែលអ្នកចង់ភ្ជាប់
     }
 }

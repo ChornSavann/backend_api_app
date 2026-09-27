@@ -19,6 +19,10 @@ class Delivery extends Model
         'receiver_phone',
         'note',
         'status',
+        'store_lat',
+        'store_lng',
+        'customer_lat',
+        'customer_lng',
     ];
 
     // 🔗 ទំនាក់ទំនង៖ Delivery មួយជាកម្មសិទ្ធិរបស់ Order មួយ

@@ -75,7 +75,7 @@ class OrderService implements OrderServiceInterface
     {
         return DB::transaction(function () use ($data) {
 
-            
+
             $customer = null;
             if (!empty($data['customer_id'])) {
                 $customer = Customer::find($data['customer_id']);
@@ -95,7 +95,7 @@ class OrderService implements OrderServiceInterface
                 );
             }
 
-            
+
             $order = Order::create([
                 'order_number'    => $data['order_number'],
                 'customer_id'     => $customer->id ?? null,
@@ -104,11 +104,11 @@ class OrderService implements OrderServiceInterface
                 'discount_amount' => $data['discount_amount'] ?? 0.00,
                 'tax_amount'      => $data['tax_amount'] ?? 0.00,
                 'total_amount'    => $data['total_amount'],
-                'order_type'      => $data['order_type'] ?? 'dine_in', 
+                'order_type'      => $data['order_type'] ?? 'dine_in',
                 'status'          => 'completed',
             ]);
 
-            
+
             if (($data['order_type'] ?? '') === 'delivery') {
                 Delivery::create([
                     'order_id'         => $order->id,
@@ -119,11 +119,15 @@ class OrderService implements OrderServiceInterface
                     'receiver_name'    => $data['receiver_name'] ?? $customer->name,
                     'receiver_phone'   => $data['receiver_phone'] ?? $customer->phone,
                     'note'             => $data['note'] ?? null,
-                    'status'           => 'pending', 
+                    'store_lat'        => $data['store_lat'] ?? 11.5564,
+                    'store_lng'        => $data['store_lng'] ?? 104.9282,
+                    'customer_lat'     => $data['customer_lat'] ?? 11.5650,
+                    'customer_lng'     => $data['customer_lng'] ?? 104.9150,
+                    'status'           => 'pending',
                 ]);
             }
 
-            
+
             $invoice = Invoice::create([
                 'order_id'       => $order->id,
                 'invoice_number' => 'INV-' . $data['order_number'],
@@ -136,7 +140,7 @@ class OrderService implements OrderServiceInterface
                 'status'         => 'paid',
             ]);
 
-        
+
             foreach ($data['items'] as $item) {
                 OrderDetail::create([
                     'order_id'     => $order->id,
@@ -171,7 +175,7 @@ class OrderService implements OrderServiceInterface
                 ]);
             }
 
-    
+
             Payment::create([
                 'order_id'       => $order->id,
                 'payment_method' => $data['payment_method'],
@@ -375,7 +379,7 @@ class OrderService implements OrderServiceInterface
         return $this->orderRepository->getDeliveryOrders();
     }
 
-    public function updateDeliveryStatusProcess($id, string$status)
+    public function updateDeliveryStatusProcess($id, string $status)
     {
         $delivery = $this->orderRepository->findById($id);
 
@@ -387,9 +391,10 @@ class OrderService implements OrderServiceInterface
             ];
         }
 
-        $delivery =$this->orderRepository->updateStatus($delivery,$status);
+        $delivery = $this->orderRepository->updateStatus($delivery, $status);
 
-        if ($status === 'completed') {$order = $this->orderRepository->findOrderById($delivery->order_id);
+        if ($status === 'completed') {
+            $order = $this->orderRepository->findOrderById($delivery->order_id);
             if ($order) {
                 $this->orderRepository->updateOrderStatus($order, 'completed');
             }
@@ -403,7 +408,7 @@ class OrderService implements OrderServiceInterface
         ];
     }
 
-    public function completeDeliveryProcess($id, array$validatedData)
+    public function completeDeliveryProcess($id, array $validatedData)
     {
         $order = $this->orderRepository->findOrderById($id);
 
@@ -416,7 +421,7 @@ class OrderService implements OrderServiceInterface
         }
 
         // 2. Update ស្ថានភាព Order ជា success ឬ completed
-        $this->orderRepository->updateOrderStatus($order,$validatedData['status']);
+        $this->orderRepository->updateOrderStatus($order, $validatedData['status']);
 
         $payment = $this->orderRepository->updateOrCreatePayment($order->id, [
             'payment_method' => $validatedData['payment_method'],

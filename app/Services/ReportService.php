@@ -92,24 +92,57 @@ class ReportService implements \App\Services\Interface\ReportServiceInterface
         return $this->reportRepository->totalSalesReport();
     }
 
+    // public function getFinancialReportData($startDate, $endDate)
+    // {
+    //     // 1. គណនាចំណូលសរុប
+    //     $totalIncome = $this->reportRepository->getTotalIncome($startDate, $endDate);
+    //     // 2. ក. គណនាចំណាយទូទៅ
+    //     $generalExpenses = $this->reportRepository->getGeneralExpenses($startDate, $endDate);
+    //     // 2. ខ. គណនាការចំណាយទិញទំនិញចូល
+    //     $purchaseExpenses = $this->reportRepository->getPurchaseExpenses($startDate, $endDate);
+    //     // 3. ចំណាយសរុប
+    //     $totalExpense = $generalExpenses + $purchaseExpenses;
+    //     // 4. ប្រាក់ចំណេញសុទ្ធ
+    //     $netProfit = $totalIncome - $totalExpense;
+    //     // 5. ចំណាយលម្អិតតាមប្រភេទ
+    //     $expenseBreakdown = $this->reportRepository->getExpenseBreakdown($startDate, $endDate);
+
+    //     $incomeBreakdown = $this->reportRepository->getIncomeBreakdown($startDate, $endDate);
+    //     $expenseBreakdown = $this->reportRepository->getExpenseBreakdown($startDate, $endDate);
+    //     $expenseByCategoryBreakdown = $this->reportRepository->getExpenseByCategoryBreakdown($startDate, $endDate);
+    //     return [
+    //         'total_income' => $totalIncome,
+    //         'total_expense' => $totalExpense,
+    //         'general_expenses' => $generalExpenses,
+    //         'purchase_expenses' => $purchaseExpenses,
+    //         'net_profit' => $netProfit,
+    //         'income_breakdown' => $incomeBreakdown,
+    //         'expense_breakdown' => $expenseBreakdown,
+    //         'expense_by_category' => $expenseByCategoryBreakdown, // 🟢 ចំណាយតាម Product Category ថ្មី
+    //     ];
+    // }
     public function getFinancialReportData($startDate, $endDate)
     {
         // 1. គណនាចំណូលសរុប
         $totalIncome = $this->reportRepository->getTotalIncome($startDate, $endDate);
-        // 2. ក. គណនាចំណាយទូទៅ
+
+        // 2. ក. គណនាចំណាយទូទៅ (រួមទាំង Delivery Fee ដែលយើងទើបតែបន្ថែម)
         $generalExpenses = $this->reportRepository->getGeneralExpenses($startDate, $endDate);
+
         // 2. ខ. គណនាការចំណាយទិញទំនិញចូល
         $purchaseExpenses = $this->reportRepository->getPurchaseExpenses($startDate, $endDate);
+
         // 3. ចំណាយសរុប
         $totalExpense = $generalExpenses + $purchaseExpenses;
+
         // 4. ប្រាក់ចំណេញសុទ្ធ
         $netProfit = $totalIncome - $totalExpense;
-        // 5. ចំណាយលម្អិតតាមប្រភេទ
-        $expenseBreakdown = $this->reportRepository->getExpenseBreakdown($startDate, $endDate);
 
+        // 5. ទិន្នន័យលម្អិតផ្សេងៗ (Breakdowns)
         $incomeBreakdown = $this->reportRepository->getIncomeBreakdown($startDate, $endDate);
         $expenseBreakdown = $this->reportRepository->getExpenseBreakdown($startDate, $endDate);
         $expenseByCategoryBreakdown = $this->reportRepository->getExpenseByCategoryBreakdown($startDate, $endDate);
+
         return [
             'total_income' => $totalIncome,
             'total_expense' => $totalExpense,
@@ -118,7 +151,7 @@ class ReportService implements \App\Services\Interface\ReportServiceInterface
             'net_profit' => $netProfit,
             'income_breakdown' => $incomeBreakdown,
             'expense_breakdown' => $expenseBreakdown,
-            'expense_by_category' => $expenseByCategoryBreakdown, // 🟢 ចំណាយតាម Product Category ថ្មី
+            'expense_by_category' => $expenseByCategoryBreakdown, // 🟢 ចំណាយតាម Product Category
         ];
     }
 }
