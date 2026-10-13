@@ -2,22 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OrderDetail;
 use Illuminate\Http\Request;
 use App\Services\ReportService;
 use App\Services\Interface\ReportServiceInterface;
-use Illuminate\Http\JsonResponse;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\OrderDetail;
-use App\Models\Product;
-use App\Models\Purchase;
-use App\Models\Supplier;
-use App\Models\SupplierOrder;
-use App\Models\SupplierOrderDetail;
 use Illuminate\Support\Facades\DB;
-use App\Models\Expense;
-use App\Models\ExpenseType;
-use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use App\Models\Order;
 
 class ReportController extends Controller
 {
@@ -77,14 +68,32 @@ class ReportController extends Controller
         ]);
     }
 
-    public function YearlyReport(Request $request): JsonResponse
+    // public function YearlyReport(Request $request): JsonResponse
+    // {
+    //     $filters = $request->all();
+    //     $yearlyReport = $this->reportService->YearlyReport($filters);
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $yearlyReport
+    //     ]);
+    // }
+    public function YearlyReport(Request $request):jsonResponse
     {
-        $filters = $request->all();
-        $yearlyReport = $this->reportService->YearlyReport($filters);
-        return response()->json([
-            'success' => true,
-            'data' => $yearlyReport
-        ]);
+        try {
+        
+            $yearlyData = $this->reportService->YearlyReport($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'ទាញទិន្នន័យរបាយការណ៍ឆ្នាំដោយជោគជ័យ',
+                'data' => $yearlyData
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'មានបញ្ហាក្នុងការទាញទិន្នន័យ៖ ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getReportById($id): JsonResponse
@@ -129,18 +138,11 @@ class ReportController extends Controller
         ]);
     }
 
-    // public function lowStockReport($data): JsonResponse
-    // {
-    //     $result = $this->reportService->lowStockReport([$data = []]);
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => $result
-    //     ]);
-    // }
+
     public function lowStockReport(Request $request): JsonResponse
     {
         $filters = $request->all();
-        $result = $this->reportService->lowStockReport($filters); // ហៅ Service
+        $result = $this->reportService->lowStockReport($filters);
         return response()->json(['success' => true, 'data' => $result]);
     }
 
@@ -197,8 +199,8 @@ class ReportController extends Controller
         ]);
     }
 
-    
-    public function getFinancialReport(Request $request)
+
+    public function getFinancialReport(Request $request): jsonResponse
     {
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
@@ -208,5 +210,82 @@ class ReportController extends Controller
             'success' => true,
             'data' => $data
         ]);
+    }
+
+
+    public function getProductsByMonth(Request $request):jsonResponse
+    {
+        $year = $request->input('year');
+        $month = $request->input('month');
+
+        if (empty($year) || empty($month)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'សូមបញ្ជាក់ឆ្នាំ និងខែឱ្យបានត្រឹមត្រូវ។'
+            ], 400);
+        }
+
+        try {
+
+            $soldProducts = $this->reportService->getProductsByMonth($year, $month);
+
+            return response()->json([
+                'success' => true,
+                'data' => $soldProducts
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'មានបញ្ហាក្នុងការទាញទិន្នន័យ៖ ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getMonthlyGrowthReport(Request $request): jsonResponse
+    {
+        $year = $request->input('year');
+        $month = $request->input('month');
+
+        if (empty($year) || empty($month)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'សូមបញ្ជាក់ឆ្នាំ និងខែឱ្យបានត្រឹមត្រូវ។'
+            ], 400);
+        }
+
+        try {
+
+            $monthlyGrowthData = $this->reportService->getMonthlyGrowthReport($year, $month);
+
+            return response()->json([
+                'success' => true,
+                'data' => $monthlyGrowthData
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'មានបញ្ហាក្នុងការទាញទិន្នន័យ៖ ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    
+    public function getAllOrders():jsonResponse
+    {
+        $orders = $this->reportService->getAllOrders();
+
+        return response()->json([
+            'success' => true,
+            'data' => $orders
+        ], 200);
+    }
+    public function showInvoice($orderId):jsonResponse
+    {
+        $invoiceData = $this->reportService->showInvoice($orderId);
+
+        return response()->json([
+            'success' => true,
+            'data' => $invoiceData
+        ], 200);
     }
 }

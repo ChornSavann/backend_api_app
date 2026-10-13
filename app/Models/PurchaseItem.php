@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,6 +10,7 @@ class PurchaseItem extends Model
     use HasFactory;
 
     protected $table = 'purchase_items';
+    protected $with = ['product'];
     protected $fillable = [
         'purchase_id',
         'product_id',
@@ -18,14 +20,12 @@ class PurchaseItem extends Model
         'total_price',
     ];
 
-
     public function purchase()
     {
         return $this->belongsTo(Purchase::class);
     }
     public function product()
     {
-        return $this->belongsTo(Product::class, 'product_id'); 
-        
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }

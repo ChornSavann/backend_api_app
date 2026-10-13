@@ -29,7 +29,6 @@ class OrderService implements OrderServiceInterface
 
     public function getAllOrders()
     {
-
         return $this->orderRepository->getAllOrders();
     }
 
@@ -108,14 +107,25 @@ class OrderService implements OrderServiceInterface
                 'status'          => 'completed',
             ]);
 
-
             if (($data['order_type'] ?? '') === 'delivery') {
+
+                // 💡 គន្លឹះ៖ ប្រសិនបើ $data ផ្ញើមកជាទឹកប្រាក់សេវាដឹកជញ្ជូន គឺយកពី amount ឬ delivery_fee
+                $deliveryFee = $data['delivery_fee'] ?? $data['amount'] ?? 0.00;
+
+                // 💡 គន្លឹះ៖ ប្រសិនបើ $data ផ្ញើមកជាឈ្មោះសេវាដឹក គឺយកពី delivery_partner ឬ note
+                $deliveryPartner = $data['delivery_partner'] ?? $data['note'] ?? 'Grab Express';
+
                 Delivery::create([
                     'order_id'         => $order->id,
                     'pickup_address'   => $data['pickup_address'] ?? 'Store Address',
                     'delivery_address' => $data['delivery_address'] ?? $customer->address,
-                    'delivery_fee'     => $data['delivery_fee'] ?? 0.00,
-                    'delivery_partner' => $data['delivery_partner'] ?? 'Grab Express',
+
+                    // 🟢 ចាប់យកតម្លៃ fee ពី amount ឬ delivery_fee
+                    'delivery_fee'     => $deliveryFee,
+
+                    // 🟢 ចាប់យកឈ្មោះ partner ពី delivery_partner ឬ note (ឈ្មោះសេវាដឹក)
+                    'delivery_partner' => $deliveryPartner,
+
                     'receiver_name'    => $data['receiver_name'] ?? $customer->name,
                     'receiver_phone'   => $data['receiver_phone'] ?? $customer->phone,
                     'note'             => $data['note'] ?? null,

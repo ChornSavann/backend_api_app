@@ -80,7 +80,7 @@ class OrderRepository implements OrderInterface
 
     public function showInvoice($orderId)
     {
-        return Order::with(['invoice.items.product', 'customer', 'user', 'payment'])
+        return Order::with(['invoice.items.product', 'customer', 'user', 'payment','order'])
             ->findOrFail($orderId);
     }
 

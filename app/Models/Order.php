@@ -49,6 +49,10 @@ class Order extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function store()
+    {
+        return $this->belongsTo(Store::class, 'store_id');
+    }
     public function invoice()
     {
         return $this->hasOne(Invoice::class, 'order_id', 'id');

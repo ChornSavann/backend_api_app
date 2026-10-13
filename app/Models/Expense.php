@@ -31,6 +31,6 @@ class Expense extends Model
     }
     public function delivery()
     {
-        return $this->hasOne(Delivery::class, 'expense_id'); // ឬតាម Foreign Key ដែលអ្នកចង់ភ្ជាប់
+        return $this->hasOne(Delivery::class, 'expense_id'); 
     }
 }

@@ -43,13 +43,19 @@ class ReportRepository implements ReportInterface
     }
 
 
+
     public function DailyReport($filters)
     {
-        $query = Order::with(['customer', 'payment', 'details.product']);
+        $query = Order::with(['customer', 'payment', 'user', 'store', 'details.product']);
 
         $query->where('status', '!=', 'cancelled');
 
-        if (!empty($filters['date'])) {
+        if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+            $query->whereBetween('created_at', [
+                $filters['start_date'] . ' 00:00:00',
+                $filters['end_date'] . ' 23:59:59'
+            ]);
+        } elseif (!empty($filters['date'])) {
             $query->whereDate('created_at', $filters['date']);
         } else {
             $query->whereDate('created_at', now());
@@ -81,40 +87,47 @@ class ReportRepository implements ReportInterface
         }
 
         return $query->select(
-            DB::raw('EXTRACT(MONTH FROM created_at) as month'),
+            DB::raw('MONTH(created_at) as month'),
             DB::raw('COUNT(*) as total_orders'),
             DB::raw('SUM(total_amount) as total_revenue')
         )
-            ->groupBy('month')
+            ->groupBy(DB::raw('MONTH(created_at)'))
             ->orderBy('month', 'ASC')
             ->get();
     }
 
 
-    public function YearlyReport($filters)
+    public function YearlyReport($filters = [])
     {
-        return Order::select(
+        $query = Order::select(
             DB::raw('EXTRACT(YEAR FROM created_at) as year'),
             DB::raw('COUNT(*) as total_orders'),
             DB::raw('SUM(total_amount) as total_revenue')
-        )
-            ->groupBy('year')
+        );
+
+        if (!empty($filters['start_year']) && !empty($filters['end_year'])) {
+            $query->whereBetween(DB::raw('EXTRACT(YEAR FROM created_at)'), [$filters['start_year'], $filters['end_year']]);
+        }
+
+        return $query->groupBy('year')
             ->orderBy('year', 'ASC')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'year' => (int) $item->year,
+                    'orders' => (int) $item->total_orders,
+                    'revenue' => (float) $item->total_revenue,
+                ];
+            });
     }
 
-    /**
-     * ទាញយកព័ត៌មានលម្អិតរបស់របាយការណ៍តាម ID
-     */
+
     public function getReportById($id)
     {
         return Order::with(['customer', 'user', 'details.product', 'payment', 'invoice'])
             ->find($id);
     }
 
-    /**
-     * បង្កើតរបាយការណ៍ការលក់ (Sales Report)
-     */
 
     public function saleReport($data)
     {
@@ -150,25 +163,59 @@ class ReportRepository implements ReportInterface
         return $query->latest()->get();
     }
 
+    public function getProductsByMonth($year, $month)
+    {
+        return OrderDetail::with('product')
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->select(
+                'product_id',
+                DB::raw('SUM(quantity) as total_qty'),
+                DB::raw('AVG(unit_price) as selling_price'),
+                DB::raw('SUM(quantity * unit_price) as total_revenue')
+            )
+            ->groupBy('product_id')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->product->name ?? 'Unknown Product',
+                    'qty' => (int) $item->total_qty,
+                    'price' => (float) $item->selling_price,
+                    'total' => (float) $item->total_revenue,
+                    'image' => $item->product->image_url ?? null,
+                ];
+            });
+    }
+
 
 
     public function topSellingProducts($data)
     {
         $limit = $data['limit'] ?? 6;
 
-        return OrderDetail::with('product')
+        $query = OrderDetail::query()
+            ->join('products', 'order_details.product_id', '=', 'products.id')
             ->select(
-                'product_id',
-                'product_name',
-                DB::raw('SUM(quantity) as total_quantity_sold'),
-                DB::raw('SUM(total_price) as total_revenue')
-            )
-            ->groupBy('product_id', 'product_name')
+                'order_details.product_id',
+                'order_details.product_name',
+                'products.image',
+                DB::raw('SUM(order_details.quantity) as total_quantity_sold'),
+                DB::raw('SUM(order_details.total_price) as total_revenue')
+            );
+
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            $query->whereBetween('order_details.created_at', [$data['start_date'], $data['end_date']]);
+        }
+
+        return $query->groupBy(
+            'order_details.product_id',
+            'order_details.product_name',
+            'products.image'
+        )
             ->orderByDesc('total_quantity_sold')
             ->limit($limit)
             ->get();
     }
-
 
 
     public function lowStockReport($data = [])
@@ -205,16 +252,16 @@ class ReportRepository implements ReportInterface
         return $query->latest()->get();
     }
 
-    public function purchaseHistoryReportbyid($purchaseId, $data)
+
+    public function purchaseHistoryReportbyid($purchaseId)
     {
-        $query = Purchase::with(['supplier', 'user', 'purchaseItems.product'])
-            ->where('id', $purchaseId);
-
-        if (!empty($data['start_date']) && !empty($data['end_date'])) {
-            $query->whereBetween('created_at', [$data['start_date'], $data['end_date']]);
-        }
-
-        return $query->first();
+        return Purchase::with([
+            'supplier',
+            'user',
+            'purchaseItems.product'
+        ])
+            ->where('id', $purchaseId)
+            ->first();
     }
 
 
@@ -262,35 +309,25 @@ class ReportRepository implements ReportInterface
         return $query->sum('total_amount');
     }
 
+
     public function getGeneralExpenses($startDate, $endDate)
     {
-        $query = Expense::query();
+
+        $expenseQuery = Expense::query();
         if ($startDate && $endDate) {
-            $query->whereBetween('expense_date', [$startDate, $endDate]);
+            $expenseQuery->whereBetween('expense_date', [$startDate, $endDate]);
         }
-        return $query->sum('amount');
+        $totalExpenses = $expenseQuery->sum('amount');
+        $deliveryQuery = \App\Models\Delivery::query()
+            ->whereIn('status', ['success', 'completed']);
+
+        if ($startDate && $endDate) {
+            $deliveryQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        }
+
+        $totalDeliveryFees = $deliveryQuery->sum('delivery_fee');
+        return $totalExpenses + $totalDeliveryFees;
     }
-    // public function getGeneralExpenses($startDate, $endDate)
-    // {
-    //     // ១. បូកសរុបការចំណាយទូទៅពីตาราง Expense
-    //     $expenseQuery = Expense::query();
-    //     if ($startDate && $endDate) {
-    //         $expenseQuery->whereBetween('expense_date', [$startDate, $endDate]);
-    //     }
-    //     $totalExpenses = $expenseQuery->sum('amount');
-    //     $deliveryQuery = \App\Models\Delivery::query()
-    //         ->whereIn('status', ['success', 'completed']);
-
-    //     if ($startDate && $endDate) {
-    //         // ផ្អែកលើ created_at ក្នុងตาราง deliveries
-    //         $deliveryQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
-    //     }
-
-    //     $totalDeliveryFees = $deliveryQuery->sum('delivery_fee');
-
-    //     // ៣. បូកបញ្ចូលគ្នារវាង Expense និង Delivery Fee
-    //     return $totalExpenses + $totalDeliveryFees;
-    // }
 
     public function getPurchaseExpenses($startDate, $endDate)
     {
@@ -301,40 +338,125 @@ class ReportRepository implements ReportInterface
         return $query->sum('total');
     }
 
+
     public function getExpenseBreakdown($startDate, $endDate)
     {
-        $query = Expense::with('expenseType');
-        if ($startDate && $endDate) {
-            $query->whereBetween('expense_date', [$startDate, $endDate]);
-        }
-        return $query
+
+        $expenses = Expense::with('expenseType')
             ->select('expense_type_id', DB::raw('SUM(amount) as total_amount'))
+            ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('expense_date', [$startDate, $endDate]);
+            })
             ->groupBy('expense_type_id')
             ->get();
+
+        $deliveries = \App\Models\Delivery::query()
+            ->select('delivery_partner', DB::raw('SUM(delivery_fee) as total_fee'))
+            ->whereIn('status', ['success', 'completed'])
+            ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            })
+            ->groupBy('delivery_partner')
+            ->get();
+
+        $breakdown = [];
+        // ដាក់ទិន្នន័យ Expense ចូលមុន
+        foreach ($expenses as $item) {
+            $typeName = optional($item->expenseType)->name ?? 'ផ្សេងៗ';
+            if (!isset($breakdown[$typeName])) {
+                $breakdown[$typeName] = [
+                    'total_amount' => 0.0,
+                    'expense_type' => [
+                        'name' => $typeName,
+                        'image' => optional($item->expenseType)->image ?? null,
+                    ]
+                ];
+            }
+            $breakdown[$typeName]['total_amount'] += (float) $item->total_amount;
+        }
+
+        foreach ($deliveries as $delivery) {
+            $partnerName = $delivery->delivery_partner ?? 'Delivery Service';
+            if (!isset($breakdown[$partnerName])) {
+                // បើក្នុង Expense មិនទាន់មាន Type ហ្នឹង គឺបង្កើតថ្មី
+                $breakdown[$partnerName] = [
+                    'total_amount' => 0.0,
+                    'expense_type' => [
+                        'name' => $partnerName,
+                        'image' => null,
+                    ]
+                ];
+            }
+
+            $breakdown[$partnerName]['total_amount'] += (float) $delivery->total_fee;
+        }
+
+        return array_values($breakdown);
     }
+
+    // public function getIncomeBreakdown($startDate, $endDate)
+    // {
+    //     $query = DB::table('order_details')
+    //         ->join('orders', 'order_details.order_id', '=', 'orders.id')
+    //         ->join('products', 'order_details.product_id', '=', 'products.id')
+    //         ->join('category', 'products.category_id', '=', 'category.id')
+    //         ->where('orders.status', 'completed');
+
+    //     if ($startDate && $endDate) {
+    //         $query->whereBetween('orders.created_at', [$startDate, $endDate]);
+    //     }
+
+    //     return $query
+    //         ->select(
+    //             'category.name as category_name',
+    //             'category.image as image',
+    //             DB::raw('SUM(order_details.total_price) as total_amount')
+    //         )
+    //         ->groupBy('category.id', 'category.name', 'category.image')
+    //         ->get();
+    // }
 
     public function getIncomeBreakdown($startDate, $endDate)
     {
+
         $query = DB::table('order_details')
             ->join('orders', 'order_details.order_id', '=', 'orders.id')
             ->join('products', 'order_details.product_id', '=', 'products.id')
             ->join('category', 'products.category_id', '=', 'category.id')
-            ->where('orders.status', 'completed');
+            ->where('orders.status', 'completed')
+            ->select('category.name as category_name', 'category.image', DB::raw('SUM(order_details.total_price) as total_amount'))
+            ->groupBy('category.id', 'category.name', 'category.image');
 
         if ($startDate && $endDate) {
             $query->whereBetween('orders.created_at', [$startDate, $endDate]);
         }
 
-        return $query
-            ->select(
-                'category.name as category_name',
-                'category.image as image',
-                DB::raw('SUM(order_details.total_price) as total_amount')
-            )
-            ->groupBy('category.id', 'category.name', 'category.image')
-            ->get();
-    }
+        $breakdown = $query->get()->map(function ($item) {
+            return [
+                'category_name' => $item->category_name,
+                'image' => $item->image,
+                'total_amount' => (float) $item->total_amount,
+            ];
+        })->toArray();
 
+        $deliveryQuery = DB::table('deliveries')
+            ->whereIn('status', ['success', 'completed']);
+        if ($startDate && $endDate) {
+
+            $deliveryQuery->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        }
+
+        $totalDeliveryFee = (float) $deliveryQuery->sum('delivery_fee');
+        if ($totalDeliveryFee > 0) {
+            $breakdown[] = [
+                'category_name' => 'សេវាដឹកជញ្ជូន (Delivery Fee)',
+                'image' => null,
+                'total_amount' => $totalDeliveryFee,
+            ];
+        }
+
+        return $breakdown;
+    }
     public function getExpenseByCategoryBreakdown($startDate, $endDate)
     {
         $query = DB::table('purchase_items')
@@ -357,23 +479,68 @@ class ReportRepository implements ReportInterface
             ->get();
     }
 
-    // // 1. យកតែចំណាយទូទៅសុទ្ធសាធ (ពីតារាង expenses)
-    // public function getGeneralExpenses($startDate, $endDate)
-    // {
-    //     $query = DB::table('expenses'); // 👈 ត្រូវដាកើតចេញពីតារាង expenses ផ្ទាល់
-    //     if ($startDate && $endDate) {
-    //         $query->whereBetween('date', [$startDate, $endDate]);
-    //     }
-    //     return $query->sum('amount'); // ឬ column ទឹកប្រាក់ចំណាយ
-    // }
+    public function getMonthlyGrowthReport($year, $month)
+    {
+        // ១. ចំណូលខែបច្ចុប្បន្ន
+        $currentRevenue = Order::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
 
-    // // 2. យកតែចំណាយទិញស្តុក (ពីតារាង purchases)
-    // public function getPurchaseExpenses($startDate, $endDate)
-    // {
-    //     $query = DB::table('purchases'); // 👈 ត្រូវដាកើតចេញពីតារាង purchases ផ្ទាល់
-    //     if ($startDate && $endDate) {
-    //         $query->whereBetween('purchase_date', [$startDate, $endDate]);
-    //     }
-    //     return $query->sum('grand_total'); // ឬ column សរុបនៃការទិញ
-    // }
+        // ២. គណនារកខែ និងឆ្នាំមុន (Previous Month)
+        $prevDate = \Carbon\Carbon::create($year, $month, 1)->subMonth();
+        $prevYear = $prevDate->year;
+        $prevMonth = $prevDate->month;
+
+        // ៣. ចំណូលខែមុន
+        $previousRevenue = Order::whereYear('created_at', $prevYear)
+            ->whereMonth('created_at', $prevMonth)
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+
+        // ៤. គណនាភាគរយការប្រៀបធៀប (Growth Rate Percentage)
+        $growthPercentage = 0;
+        if ($previousRevenue > 0) {
+            $growthPercentage = (($currentRevenue - $previousRevenue) / $previousRevenue) * 100;
+        } else {
+            $growthPercentage = $currentRevenue > 0 ? 100 : 0;
+        }
+
+        return [
+            'current_revenue' => (float) $currentRevenue,
+            'previous_revenue' => (float) $previousRevenue,
+            'growth_percentage' => round($growthPercentage, 1), // ឧ. 12.5 ឬ -5.2
+            'is_increase' => $growthPercentage >= 0, // true = ឡើង, false = ចុះ
+        ];
+    }
+
+     public function getAllOrders()
+    {
+        return Order::with([
+            'details.product',
+            'customer',
+            'user',
+            'payment',
+            'delivery' => function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            }
+        ])
+        ->where('status', '!=', 'cancelled')
+        ->latest()
+        ->get();
+    }
+
+    public function showInvoice($orderId)
+    {
+        return Order::with([
+            'invoice.items.product', 
+            'customer', 
+            'user', 
+            'payment', 
+            'details'
+        ])->findOrFail($orderId);
+
+    }
 }
+    
+

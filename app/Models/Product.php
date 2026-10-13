@@ -30,8 +30,6 @@ class Product extends Model
     ];
 
     protected $appends = ['image_url'];
-
-    // 🟢 បង្កើត Accessor
     public function getImageUrlAttribute()
     {
         if (!$this->image) {
@@ -45,7 +43,7 @@ class Product extends Model
         return asset($this->image);
     }
 
-    // Relationships
+    
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');

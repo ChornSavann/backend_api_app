@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Services\Interface;
+
 interface ReportServiceInterface
 {
     public function getReportData($filters);
@@ -19,4 +21,8 @@ interface ReportServiceInterface
     public function WeeklyReport($filters);
     public function totalSalesReport();
     public function getFinancialReportData($startDate, $endDate);
+    public function getProductsByMonth($year, $month);
+      public function getMonthlyGrowthReport($year, $month);
+    public function showInvoice($orderId);
+    public function getAllOrders();
 }

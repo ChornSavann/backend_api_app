@@ -26,7 +26,7 @@ class PurchaseRepository implements \App\RepositoryInterface\PurchaseRepositoryI
     }
     public function getPurchaseById(int $purchaseId)
     {
-        return \App\Models\Purchase::with('supplier','items.product')->find($purchaseId);
+        return \App\Models\Purchase::with('supplier','items.product','user')->find($purchaseId);
     }
 
     public function getAllPurchases()

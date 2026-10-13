@@ -180,7 +180,7 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'អុីនធឺណិតនេះមិនមានក្នុងប្រព័ន្ធទេ'
+                'message' => 'អ៊ីមែលនេះមិនមាននៅក្នុងប្រព័ន្ធទេ។'
             ], 422);
         }
 
@@ -232,30 +232,26 @@ class UserController extends Controller
         ]);
 
         try {
-            // ប្រើប្រាស់ Socialite ដើម្បីទាញយកព័ត៌មាន User ពី Google Token
+
             $googleUser = Socialite::driver('google')->stateless()->userFromToken($request->access_token);
 
             $email = $googleUser->getEmail();
             $name = $googleUser->getName();
             $googleId = $googleUser->getId();
-
-            // ឆែកមើលថាមាន User នេះក្នុង Database ឬยัง
             $user = User::where('email', $email)->first();
 
             if (!$user) {
-                // បើមិនទាន់មាន បង្កើត Account ថ្មីស្វ័យប្រវត្តិ
                 $user = User::create([
                     'name' => $name,
                     'email' => $email,
                     'google_id' => $googleId,
-                    'password' => Hash::make(Str::random(16)), // Random Password
+                    'password' => Hash::make(Str::random(16)), 
                 ]);
             } else {
-                // បើមានហើយ ធ្វើបច្ចុប្បន្នភាព google_id ទុកបើចាំបាច់
+                
                 $user->update(['google_id' => $googleId]);
             }
 
-            // បង្កើត Sanctum Token សម្រាប់ផ្ញើត្រឡប់ទៅ Flutter វិញ
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
