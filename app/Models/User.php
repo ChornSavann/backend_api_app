@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'image',
         'phone',
+        'role_id',
         'password',
     ];
     protected $appends = ['image_url'];
@@ -59,5 +60,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function role()
+    {
+        return $this->belongsTo(Role::class,'role_id');
     }
 }

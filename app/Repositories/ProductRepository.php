@@ -17,7 +17,7 @@ class ProductRepository implements ProductInterface
 
     public function getProductsWithMinQty()
     {
-        
+
         return Product::with(['category', 'brand', 'unit'])
             ->where('stock_quantity', '>=', 10)
             ->latest()
@@ -62,9 +62,35 @@ class ProductRepository implements ProductInterface
 
         return 'products/' . $imageName;
     }
+    private function generateSlug(?string $name, ?string $sku, ?int $excludeId = null): string
+    {
+        $slug = Str::slug($name ?? '');
+        if (empty($slug)) {
+            $slug = Str::slug($sku ?? '') ?: 'product-' . time();
+        }
 
+        $originalSlug = $slug;
+        $count = 1;
+        $query = Product::where('slug', $slug);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        while ($query->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+
+            $query = Product::where('slug', $slug);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+        }
+
+        return $slug;
+    }
     public function createProduct(array $data)
     {
+        $data['slug'] = $this->generateSlug($data['name'] ?? null, $data['sku'] ?? null);
         if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
             $data['image'] = $this->uploadImage($data['image'], $data['name']);
         }
@@ -75,7 +101,10 @@ class ProductRepository implements ProductInterface
     public function updateProduct($id, array $data)
     {
         $product = Product::findOrFail($id);
-
+        // 🔹 Generate Slug ថ្មីបើមានការប្ដូរឈ្មោះ
+        if (isset($data['name'])) {
+            $data['slug'] = $this->generateSlug($data['name'], $data['sku'] ?? $product->sku, $id);
+        }
         if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
             if ($product->image) {
                 $oldImagePath = public_path($product->image);

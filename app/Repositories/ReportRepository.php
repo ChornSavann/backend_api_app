@@ -481,24 +481,23 @@ class ReportRepository implements ReportInterface
 
     public function getMonthlyGrowthReport($year, $month)
     {
-        // ១. ចំណូលខែបច្ចុប្បន្ន
+
         $currentRevenue = Order::whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->where('status', '!=', 'cancelled')
             ->sum('total_amount');
 
-        // ២. គណនារកខែ និងឆ្នាំមុន (Previous Month)
+
         $prevDate = \Carbon\Carbon::create($year, $month, 1)->subMonth();
         $prevYear = $prevDate->year;
         $prevMonth = $prevDate->month;
 
-        // ៣. ចំណូលខែមុន
         $previousRevenue = Order::whereYear('created_at', $prevYear)
             ->whereMonth('created_at', $prevMonth)
             ->where('status', '!=', 'cancelled')
             ->sum('total_amount');
 
-        // ៤. គណនាភាគរយការប្រៀបធៀប (Growth Rate Percentage)
+
         $growthPercentage = 0;
         if ($previousRevenue > 0) {
             $growthPercentage = (($currentRevenue - $previousRevenue) / $previousRevenue) * 100;
@@ -509,12 +508,12 @@ class ReportRepository implements ReportInterface
         return [
             'current_revenue' => (float) $currentRevenue,
             'previous_revenue' => (float) $previousRevenue,
-            'growth_percentage' => round($growthPercentage, 1), // ឧ. 12.5 ឬ -5.2
-            'is_increase' => $growthPercentage >= 0, // true = ឡើង, false = ចុះ
+            'growth_percentage' => round($growthPercentage, 1),
+            'is_increase' => $growthPercentage >= 0,
         ];
     }
 
-     public function getAllOrders()
+    public function getAllOrders()
     {
         return Order::with([
             'details.product',
@@ -525,22 +524,19 @@ class ReportRepository implements ReportInterface
                 $query->where('status', '!=', 'cancelled');
             }
         ])
-        ->where('status', '!=', 'cancelled')
-        ->latest()
-        ->get();
+            ->where('status', '!=', 'cancelled')
+            ->latest()
+            ->get();
     }
 
     public function showInvoice($orderId)
     {
         return Order::with([
-            'invoice.items.product', 
-            'customer', 
-            'user', 
-            'payment', 
+            'invoice.items.product',
+            'customer',
+            'user',
+            'payment',
             'details'
         ])->findOrFail($orderId);
-
     }
 }
-    
-

@@ -68,15 +68,6 @@ class ReportController extends Controller
         ]);
     }
 
-    // public function YearlyReport(Request $request): JsonResponse
-    // {
-    //     $filters = $request->all();
-    //     $yearlyReport = $this->reportService->YearlyReport($filters);
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => $yearlyReport
-    //     ]);
-    // }
     public function YearlyReport(Request $request):jsonResponse
     {
         try {

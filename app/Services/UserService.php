@@ -43,11 +43,7 @@ class UserService implements UserServiceInterface
 
     public function updateUser($id, array $userDetails, ?UploadedFile $image = null)
     {
-        // if (!empty($userDetails['password'])) {
-        //     $userDetails['password'] = Hash::make($userDetails['password']);
-        // } else {
-        //     unset($userDetails['password']);
-        // }
+       
         $existingUser = User::find($id);
         if (!$existingUser) {
             return [

@@ -18,11 +18,14 @@
     use App\Http\Controllers\AuthController;
     use App\Http\Controllers\StoreController;
     use App\Http\Controllers\ExpenseTypeController;
+    use App\Http\Controllers\RoleController;
+    use App\Http\Controllers\PermissionController;
 
     Route::post('/login-user', [AuthController::class, 'login']);
-    Route::get('auth/users', [AuthController::class, 'index']);
+    Route::get('/auth/users', [AuthController::class, 'index']);
     Route::post('/auth/create-user', [AuthController::class, 'createUser']);
-
+    Route::get('/auth-logs', [AuthController::class, 'getLogs']);
+    Route::get('/auth-logs/{id}', [AuthController::class, 'getLogDetail']);
     // protected route requiring the generated token
     Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         return $request->user();
@@ -31,6 +34,26 @@
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
+        Route::get('/profile', [AuthController::class, 'getProfile']);
+    });
+    //Role
+    // ទាញយកបញ្ជី Roles ទាំងអស់
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::get('/roles/{id}', [RoleController::class, 'show']);
+    Route::post('/roles/create', [RoleController::class, 'store']);
+    Route::post('/roles/{id}', [RoleController::class, 'update']);
+    Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
+    // កំណត់ Role ឱ្យ User/Employee
+    Route::post('/employees/{id}/assign-role', [RoleController::class, 'assignRole']);
+    Route::get('/roles/{id}/permissions', [RoleController::class, 'getrolewithpermissions']);
+    Route::prefix('permissions')->group(function () {
+        Route::get('/', [PermissionController::class, 'index']);
+        Route::post('/', [PermissionController::class, 'store']);
+        Route::post('/assign/{id}', [PermissionController::class, 'assignPermissionToRole']);
+        Route::get('/{id}', [PermissionController::class, 'show']);
+        Route::get('/{id}/edit', [PermissionController::class, 'edit']);
+        Route::post('/{id}', [PermissionController::class, 'update']);
+        Route::delete('/{id}', [PermissionController::class, 'destroy']);
     });
 
     Route::get('/categories', [Categorycontroller::class, 'index']);
