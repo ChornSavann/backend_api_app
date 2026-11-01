@@ -21,7 +21,6 @@ class AuthRepository implements AuthInterface
 
     public function findByEmail(string $email): ?User
     {
-        // 🟢 បន្ថែម with(['role.permissions']) ត្រង់នេះ
         return User::with(['role.permissions'])->where('email', $email)->first();
     }
     public function createUser(array $data): User

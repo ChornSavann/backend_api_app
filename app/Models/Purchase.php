@@ -26,7 +26,7 @@ class Purchase extends Model
         'notes',
     ];
 
-    // ទំនាក់ទំនង៖ ការទិញមួយ (Purchase) អាចមានទំនិញច្រើន (PurchaseItems)
+    
     public function items()
     {
         return $this->hasMany(PurchaseItem::class);

@@ -8,13 +8,13 @@ use App\Models\Delivery;
 interface OrderInterface
 {
     public function getAllOrders();
-    public function getOrderById($id);
+    public function getOrderById(int $id);
     public function createOrder(array $data): Order;
-    public function updateOrder($id, array $data);
-    public function deleteOrder($id);
+    public function updateOrder(int $id, array $data);
+    public function deleteOrder(int $id);
     public function createPayment(array $data): void;
     public function createOrderDetail(array $data): void;
-    public function showInvoice($orderId);
+    public function showInvoice(int $orderId);
     public function updateDeliveryStatus(Delivery $delivery, string $status);
     public function findOrderByDelivery(Delivery $delivery);
     public function updateOrderOnCancel(Order $order);

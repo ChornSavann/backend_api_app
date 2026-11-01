@@ -9,13 +9,14 @@ class Category extends Model
 {
     use HasFactory;
     protected $table = 'category';
-    protected $appends = ['image_url'];
+
     protected $fillable = [
         'name',
         'description',
         'image',
     ];
-    // protected $appends = ['image_url'];
+    
+    protected $appends = ['image_url'];
     public function getImageUrlAttribute()
     {
         if (!$this->image) {

@@ -117,6 +117,14 @@ class AppServiceProvider extends ServiceProvider
                 \App\Services\Interface\ExpenseTypeServiceInterface::class,
                 \App\Services\ExpenseTypeService::class
             );
+            $this->app->bind(
+                \App\RepositoryInterface\PromotionInterface::class,
+                \App\Repositories\PromotionRepository::class
+            );
+            $this->app->bind(
+                \App\Services\Interface\PromotionServiceInterface::class,
+                \App\Services\PromotionService::class
+            );
     }
 
     /**

@@ -27,7 +27,7 @@ class RoleController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => $role 
+                'data'    => $role
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -37,6 +37,7 @@ class RoleController extends Controller
             ], 404);
         }
     }
+    
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -64,7 +65,7 @@ class RoleController extends Controller
         }
     }
 
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         try {
             $role = Role::findOrFail($id);
@@ -81,7 +82,7 @@ class RoleController extends Controller
         }
     }
 
-    public function destroy($id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         try {
             $role = Role::findOrFail($id);
@@ -99,7 +100,7 @@ class RoleController extends Controller
             ], 500);
         }
     }
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -126,7 +127,7 @@ class RoleController extends Controller
             ], 500);
         }
     }
-    public function assignRole(Request $request, $id): JsonResponse
+    public function assignRole(Request $request, int $id): JsonResponse
     {
         $request->validate([
             'roleId' => 'required|exists:roles,id',
@@ -149,5 +150,19 @@ class RoleController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+    }
+
+    // Laravel Controller
+    public function getUserPermissions($userId)
+    {
+        $user = User::with('permissions', 'role.permissions')->findOrFail($userId);
+
+        return response()->json([
+            'success' => true,
+            'user_id' => $user->id,
+            'role'    => $user->role->name ?? 'Cashier',
+            // បញ្ជី permissions ទាំងអស់ដែល user នេះមាន
+            'permissions' => $user->getAllPermissions()->pluck('name')
+        ]);
     }
 }

@@ -64,7 +64,7 @@ class OrderController extends Controller
         }
     }
 
-    public function showInvoice($id): JsonResponse
+    public function showInvoice(int $id): JsonResponse
     {
         try {
             $invoice = $this->orderService->showInvoice($id);
@@ -82,7 +82,7 @@ class OrderController extends Controller
         }
     }
 
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
 
         Log::info('Requested Order ID: ' . $id);
@@ -140,7 +140,7 @@ class OrderController extends Controller
 
 
 
-    public function updateDeliveryStatus(Request $request, $id):JsonResponse
+    public function updateDeliveryStatus(Request $request,int $id):JsonResponse
     {
         $request->validate([
             'status' => 'required|in:pending,preparing,picked_up,on_the_way,completed,cancelled'
@@ -162,7 +162,7 @@ class OrderController extends Controller
         ], $result['status']);
     }
 
-    public function completeDelivery(Request $request, $id):JsonResponse
+    public function completeDelivery(Request $request,int $id):JsonResponse
     {
        
         $request->validate([
@@ -189,7 +189,7 @@ class OrderController extends Controller
         ], $result['status']);
     }
 
-    public function updateDeliveryPaymentAndStatus(Request $request, $deliveryId): JsonResponse
+    public function updateDeliveryPaymentAndStatus(Request $request,int $deliveryId): JsonResponse
     {
 
         $result = $this->orderService->cancelDelivery($deliveryId);

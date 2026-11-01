@@ -32,7 +32,7 @@ class OrderService implements OrderServiceInterface
         return $this->orderRepository->getAllOrders();
     }
 
-    public function getOrderById($id)
+    public function getOrderById(int $id)
     {
         return $this->orderRepository->getOrderById($id);
     }
@@ -58,22 +58,142 @@ class OrderService implements OrderServiceInterface
         ]);
     }
 
-    public function updateOrder($id, array $data)
+    public function updateOrder(int $id, array $data)
     {
         return $this->orderRepository->updateOrder($id, $data);
     }
 
-    public function deleteOrder($id)
+    public function deleteOrder(int $id)
     {
         return $this->orderRepository->deleteOrder($id);
     }
 
+    // public function processOrder(array $data)
+    // {
+    //     return DB::transaction(function () use ($data) {
 
+
+    //         $customer = null;
+    //         if (!empty($data['customer_id'])) {
+    //             $customer = Customer::find($data['customer_id']);
+    //         }
+
+    //         if (!$customer) {
+    //             $customer = Customer::updateOrCreate(
+    //                 [
+    //                     'phone' => $data['customer_phone'] ?? '000000000'
+    //                 ],
+    //                 [
+    //                     'name'    => $data['customer_name'] ?? 'Guest',
+    //                     'email'   => $data['customer_email'] ?? ('guest_' . time() . '@example.com'),
+    //                     'address' => $data['customer_address'] ?? null,
+    //                     'points'  => $data['customer_point'] ?? 1,
+    //                 ]
+    //             );
+    //         }
+
+
+    //         $order = Order::create([
+    //             'order_number'    => $data['order_number'],
+    //             'customer_id'     => $customer->id ?? null,
+    //             'user_id'         => $data['user_id'],
+    //             'subtotal'        => $data['subtotal'],
+    //             'discount_amount' => $data['discount_amount'] ?? 0.00,
+    //             'tax_amount'      => $data['tax_amount'] ?? 0.00,
+    //             'total_amount'    => $data['total_amount'],
+    //             'order_type'      => $data['order_type'] ?? 'dine_in',
+    //             'status'          => 'completed',
+    //         ]);
+
+    //         if (($data['order_type'] ?? '') === 'delivery') {
+    //             $deliveryFee = $data['delivery_fee'] ?? $data['amount'] ?? 0.00;
+    //             $deliveryPartner = $data['delivery_partner'] ?? $data['note'] ?? 'Grab Express';
+
+    //             Delivery::create([
+    //                 'order_id'         => $order->id,
+    //                 'pickup_address'   => $data['pickup_address'] ?? 'Store Address',
+    //                 'delivery_address' => $data['delivery_address'] ?? $customer->address,
+    //                 'delivery_fee'     => $deliveryFee,
+
+    //                 'delivery_partner' => $deliveryPartner,
+
+    //                 'receiver_name'    => $data['receiver_name'] ?? $customer->name,
+    //                 'receiver_phone'   => $data['receiver_phone'] ?? $customer->phone,
+    //                 'note'             => $data['note'] ?? null,
+    //                 'store_lat'        => $data['store_lat'] ?? 11.5564,
+    //                 'store_lng'        => $data['store_lng'] ?? 104.9282,
+    //                 'customer_lat'     => $data['customer_lat'] ?? 11.5650,
+    //                 'customer_lng'     => $data['customer_lng'] ?? 104.9150,
+    //                 'status'           => 'pending',
+    //             ]);
+    //         }
+
+
+    //         $invoice = Invoice::create([
+    //             'order_id'       => $order->id,
+    //             'invoice_number' => 'INV-' . $data['order_number'],
+    //             'user_id'        => $data['user_id'],
+    //             'subtotal'       => $data['subtotal'],
+    //             'tax'            => $data['tax_amount'] ?? 0.00,
+    //             'discount'       => $data['discount_amount'] ?? 0.00,
+    //             'grand_total'    => $data['total_amount'],
+    //             'payment_method' => $data['payment_method'],
+    //             'status'         => 'paid',
+    //         ]);
+
+
+    //         foreach ($data['items'] as $item) {
+    //             OrderDetail::create([
+    //                 'order_id'     => $order->id,
+    //                 'product_id'   => $item['product_id'],
+    //                 'product_name' => $item['product_name'] ?? (Product::find($item['product_id'])->name ?? 'Unknown'),
+    //                 'unit_price'   => $item['unit_price'],
+    //                 'quantity'     => $item['quantity'],
+    //                 'total_price'  => $item['total_price'],
+    //             ]);
+
+    //             InvoiceItem::create([
+    //                 'invoice_id'  => $invoice->id,
+    //                 'product_id'  => $item['product_id'],
+    //                 'quantity'    => $item['quantity'],
+    //                 'unit_price'  => $item['unit_price'],
+    //                 'total_price' => $item['total_price'],
+    //             ]);
+
+    //             $product = Product::find($item['product_id']);
+    //             if ($product) {
+    //                 $product->stock_quantity -= $item['quantity'];
+    //                 $product->save();
+    //             }
+
+    //             StockMovement::create([
+    //                 'product_id'   => $item['product_id'],
+    //                 'user_id'      => $data['user_id'],
+    //                 'type'         => 'out',
+    //                 'quantity'     => $item['quantity'],
+    //                 'reference_no' => $data['order_number'],
+    //                 'note'         => 'Sale via POS Order',
+    //             ]);
+    //         }
+
+
+    //         Payment::create([
+    //             'order_id'       => $order->id,
+    //             'payment_method' => $data['payment_method'],
+    //             'amount'         => $data['amount_paid'],
+    //             'change_amount'  => $data['change_amount'],
+    //             'status'         => 'success',
+    //         ]);
+
+    //         $orderLoaded = $order->load(['details', 'payment', 'customer', 'delivery']);
+    //         $this->sendInvoiceToTelegram($orderLoaded, $invoice); 
+    //         return $orderLoaded;
+    //     });
+    // }
 
     public function processOrder(array $data)
     {
         return DB::transaction(function () use ($data) {
-
 
             $customer = null;
             if (!empty($data['customer_id'])) {
@@ -95,6 +215,10 @@ class OrderService implements OrderServiceInterface
             }
 
 
+            $orderType = $data['order_type'] ?? 'dine_in';
+            $orderStatus = ($orderType === 'delivery') ? 'pending' : 'completed';
+            $invoiceStatus = ($orderType === 'delivery') ? 'unpaid' : 'paid';
+
             $order = Order::create([
                 'order_number'    => $data['order_number'],
                 'customer_id'     => $customer->id ?? null,
@@ -103,29 +227,20 @@ class OrderService implements OrderServiceInterface
                 'discount_amount' => $data['discount_amount'] ?? 0.00,
                 'tax_amount'      => $data['tax_amount'] ?? 0.00,
                 'total_amount'    => $data['total_amount'],
-                'order_type'      => $data['order_type'] ?? 'dine_in',
-                'status'          => 'completed',
+                'order_type'      => $orderType,
+                'status'          => $orderStatus,
             ]);
 
-            if (($data['order_type'] ?? '') === 'delivery') {
-
-                // 💡 គន្លឹះ៖ ប្រសិនបើ $data ផ្ញើមកជាទឹកប្រាក់សេវាដឹកជញ្ជូន គឺយកពី amount ឬ delivery_fee
+            if ($orderType === 'delivery') {
                 $deliveryFee = $data['delivery_fee'] ?? $data['amount'] ?? 0.00;
-
-                // 💡 គន្លឹះ៖ ប្រសិនបើ $data ផ្ញើមកជាឈ្មោះសេវាដឹក គឺយកពី delivery_partner ឬ note
                 $deliveryPartner = $data['delivery_partner'] ?? $data['note'] ?? 'Grab Express';
 
                 Delivery::create([
                     'order_id'         => $order->id,
                     'pickup_address'   => $data['pickup_address'] ?? 'Store Address',
                     'delivery_address' => $data['delivery_address'] ?? $customer->address,
-
-                    // 🟢 ចាប់យកតម្លៃ fee ពី amount ឬ delivery_fee
                     'delivery_fee'     => $deliveryFee,
-
-                    // 🟢 ចាប់យកឈ្មោះ partner ពី delivery_partner ឬ note (ឈ្មោះសេវាដឹក)
                     'delivery_partner' => $deliveryPartner,
-
                     'receiver_name'    => $data['receiver_name'] ?? $customer->name,
                     'receiver_phone'   => $data['receiver_phone'] ?? $customer->phone,
                     'note'             => $data['note'] ?? null,
@@ -137,7 +252,6 @@ class OrderService implements OrderServiceInterface
                 ]);
             }
 
-
             $invoice = Invoice::create([
                 'order_id'       => $order->id,
                 'invoice_number' => 'INV-' . $data['order_number'],
@@ -147,9 +261,8 @@ class OrderService implements OrderServiceInterface
                 'discount'       => $data['discount_amount'] ?? 0.00,
                 'grand_total'    => $data['total_amount'],
                 'payment_method' => $data['payment_method'],
-                'status'         => 'paid',
+                'status'         => $invoiceStatus,
             ]);
-
 
             foreach ($data['items'] as $item) {
                 OrderDetail::create([
@@ -169,6 +282,7 @@ class OrderService implements OrderServiceInterface
                     'total_price' => $item['total_price'],
                 ]);
 
+
                 $product = Product::find($item['product_id']);
                 if ($product) {
                     $product->stock_quantity -= $item['quantity'];
@@ -186,22 +300,94 @@ class OrderService implements OrderServiceInterface
             }
 
 
-            Payment::create([
-                'order_id'       => $order->id,
-                'payment_method' => $data['payment_method'],
-                'amount'         => $data['amount_paid'],
-                'change_amount'  => $data['change_amount'],
-                'status'         => 'success',
-            ]);
+            if ($orderType !== 'delivery' || isset($data['amount_paid'])) {
+                Payment::create([
+                    'order_id'       => $order->id,
+                    'payment_method' => $data['payment_method'],
+                    'amount'         => $data['amount_paid'] ?? 0,
+                    'change_amount'  => $data['change_amount'] ?? 0,
+                    'status'         => ($orderType === 'delivery') ? 'pending' : 'success',
+                ]);
+            }
 
             $orderLoaded = $order->load(['details', 'payment', 'customer', 'delivery']);
-            // $this->sendInvoiceToTelegram($orderLoaded, $invoice); 
+            if ($orderType === 'delivery') {
+                $delivery = $orderLoaded->delivery;
+                if ($delivery) {
+                    $this->sendDeliveryAlertToTelegram($orderLoaded, $delivery);
+                }
+            } else {
+
+                $this->sendInvoiceToTelegram($orderLoaded, $invoice);
+            }
 
             return $orderLoaded;
         });
     }
 
-    public function showInvoice($orderId)
+    protected function sendDeliveryAlertToTelegram($order, $delivery)
+    {
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $chatId = env('TELEGRAM_CHAT_ID');
+
+        if (!$token || !$chatId) {
+            Log::warning("Telegram Token or Chat ID is missing.");
+            return;
+        }
+
+        $cashierName  = $order->user->name ?? 'System Admin';
+        $receiverName = $delivery->receiver_name ?? 'N/A';
+        $receiverPhone = $delivery->receiver_phone ?? 'N/A';
+        $deliveryAddress = $delivery->delivery_address ?? 'N/A';
+        $deliveryPartner = $delivery->delivery_partner ?? 'Grab Express';
+        $deliveryFee  = $delivery->delivery_fee ?? 0.00;
+        $note         = $delivery->note ?? 'គ្មាន';
+        $timeNow      = \Carbon\Carbon::now('Asia/Phnom_Penh')->format('d/m/Y | H:i:s');
+
+        $message  = "🛵 <b>Khmer Store - ការបញ្ជាទិញដឹកជញ្ជូនថ្មី</b>\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "📦 <b>បញ្ជាទិញ :</b> <code>{$order->order_number}</code>\n";
+        $message .= "👤 <b>អ្នកទទួល :</b> {$receiverName} ({$receiverPhone})\n";
+        $message .= "📍 <b>អាសយដ្ឋាន :</b> {$deliveryAddress}\n";
+        $message .= "🛵 <b>សេវាដឹក :</b> <code>{$deliveryPartner}</code>\n";
+        $message .= "💵 <b>ថ្លៃដឹកជញ្ជូន :</b> \${$deliveryFee}\n";
+        $message .= "👨‍💻 <b>អ្នកបង្កើត :</b> {$cashierName}\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "🛒 <b>បរិយាយទំនិញ :</b>\n";
+
+        foreach ($order->details as $index => $item) {
+            $no = $index + 1;
+            $qty = floatval($item->quantity);
+
+            $message .= "<b>{$no}. {$item->product_name}</b>\n";
+            $message .= "   └ <i>{$qty}</i> x \${$item->unit_price} = <b>\${$item->total_price}</b>\n";
+        }
+
+        $message .= "━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "💰 <b>ទឹកប្រាក់សរុប (Grand Total):</b> \${$order->total_amount}\n";
+        $message .= "📝 <b>ចំណាំ (Note):</b> {$note}\n";
+        $message .= "⏳ <b>ស្ថានភាព :</b> <b>PENDING (រង់ចាំដឹកជញ្ជូន)</b>\n";
+        $message .= "━━━━━━━━━━━━━━━━━━━\n";
+        $message .= "🕒 <i>កាលបរិច្ឆេទ : {$timeNow}</i>";
+
+        try {
+            $response = Http::withoutVerifying()
+                ->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                    'chat_id'    => $chatId,
+                    'text'       => $message,
+                    'parse_mode' => 'HTML',
+                    'disable_web_page_preview' => true,
+                ]);
+
+            if ($response->failed()) {
+                Log::error("Telegram Delivery API Error: " . $response->body());
+            }
+        } catch (\Exception $e) {
+            Log::error("Telegram Delivery Exception: " . $e->getMessage());
+        }
+    }
+
+    public function showInvoice(int $orderId)
     {
         return $this->orderRepository->showInvoice($orderId);
     }
@@ -221,7 +407,7 @@ class OrderService implements OrderServiceInterface
         );
     }
 
-    protected function prepareOrderData(array $data, $customerId)
+    protected function prepareOrderData(array $data, int  $customerId)
     {
         return [
             'order_number'    => $data['order_number'],
@@ -249,7 +435,7 @@ class OrderService implements OrderServiceInterface
         ]);
     }
 
-    protected function updateStockAndMovement(array $item, $userId, $orderNumber)
+    protected function updateStockAndMovement(array $item, int $userId, int $orderNumber)
     {
         $product = Product::findOrFail($item['product_id']);
 
@@ -270,57 +456,6 @@ class OrderService implements OrderServiceInterface
     }
 
 
-    // protected function sendInvoiceToTelegram($order, $invoice)
-    // {
-    //     $token = env('TELEGRAM_BOT_TOKEN');
-    //     $chatId = env('TELEGRAM_CHAT_ID');
-
-    //     if (!$token || !$chatId) {
-    //         Log::warning("Telegram Token or Chat ID is missing.");
-    //         return;
-    //     }
-
-    //     $cashierName = $order->user->name ?? 'System Admin';
-    //     $amountPaid  = $order->payment->amount ?? 0.00;
-    //     $changeAmount = $order->payment->change_amount ?? 0.00;
-
-    //     $message  = "<b>🛍 POS SYSTEM - វិក្កយបត្រថ្មី (NEW INVOICE)</b>\n";
-    //     $message .= "━━━━━━━━━━━━━━━━━━━━━\n";
-    //     $message .= "📄 <b>លេខវិក្កយបត្រ:</b> <code>{$invoice->invoice_number}</code>\n";
-    //     $message .= "📦 <b>លេខបញ្ជាទិញ:</b> <code>{$order->order_number}</code>\n";
-    //     $message .= "👤 <b>អតិថិជន:</b> " . ($order->customer->name ?? 'Guest') . " (" . ($order->customer->phone ?? 'N/A') . ")\n";
-    //     $message .= " cashier <b>អ្នកគិតលុយ:</b> {$cashierName}\n";
-    //     $message .= "━━━━━━━━━━━━━━━━━━━━━━\n";
-    //     $message .= "🛒 <b>បញ្ជីទំនិញ (Items):</b>\n";
-
-    //     foreach ($order->details as $item) {
-    //         $message .= "▫️ <b>{$item->product_name}</b>\n";
-    //         $message .= "   └ <i>{$item->quantity}x</i> @ \${$item->unit_price} = <b>\${$item->total_price}</b>\n";
-    //     }
-
-    //     $message .= "━━━━━━━━━━━━━━━━━━━━━━\n";
-    //     $message .= "💰 <b>សរុបទឹកប្រាក់ (Grand Total):</b> <b>\${$invoice->grand_total}</b>\n";
-    //     $message .= "💵 <b>ប្រាក់ទទួលបាន (Amount Paid):</b> \${$amountPaid}\n";
-    //     $message .= "🪙 <b>ប្រាក់អាប់ (Change):</b> \${$changeAmount}\n";
-    //     $message .= "💳 <b>ការទូទាត់ (Payment):</b> <i>{$invoice->payment_method}</i>\n";
-    //     $message .= "✅ <b>ស្ថានភាព (Status):</b> <b>Paid (បានបង់ប្រាក់)</b>\n";
-    //     $message .= "🕒 <b>ម៉ោងចេញវិក្កយបត្រ:</b> <code>" . \Carbon\Carbon::now('Asia/Phnom_Penh')->format('Y-m-d H:i:s') . "</code>";
-
-    //     try {
-    //         $response = Http::withoutVerifying()
-    //             ->post("https://api.telegram.org/bot{$token}/sendMessage", [
-    //                 'chat_id'    => $chatId,
-    //                 'text'       => $message,
-    //                 'parse_mode' => 'HTML',
-    //             ]);
-
-    //         if ($response->failed()) {
-    //             Log::error("Telegram API Error: " . $response->body());
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error("Telegram Exception: " . $e->getMessage());
-    //     }
-    // }
 
     protected function sendInvoiceToTelegram($order, $invoice)
     {
@@ -346,7 +481,7 @@ class OrderService implements OrderServiceInterface
         $message .= "📄 <b>វិក្កយបត្រ :</b> <code>{$invoice->invoice_number}</code>\n";
         $message .= "🛒 <b>បញ្ជាទិញ :</b> <code>{$order->order_number}</code>\n";
         $message .= "👤 <b>អតិថិជន :</b> {$customerName} ({$customerPhone})\n";
-        $message .= " cashier <b>អ្នកគិតលុយ :</b> {$cashierName}\n";
+        $message .= " Cashier <b>អ្នកគិតលុយ :</b> {$cashierName}\n";
         $message .= "━━━━━━━━━━━━━━━━━━━\n";
         $message .= "📦 <b>បរិយាយទំនិញ :</b>\n";
 
@@ -389,7 +524,7 @@ class OrderService implements OrderServiceInterface
         return $this->orderRepository->getDeliveryOrders();
     }
 
-    public function updateDeliveryStatusProcess($id, string $status)
+    public function updateDeliveryStatusProcess(int $id, string $status)
     {
         $delivery = $this->orderRepository->findById($id);
 
@@ -418,7 +553,7 @@ class OrderService implements OrderServiceInterface
         ];
     }
 
-    public function completeDeliveryProcess($id, array $validatedData)
+    public function completeDeliveryProcess(int $id, array $validatedData)
     {
         $order = $this->orderRepository->findOrderById($id);
 
@@ -429,8 +564,6 @@ class OrderService implements OrderServiceInterface
                 'status' => 404
             ];
         }
-
-        // 2. Update ស្ថានភាព Order ជា success ឬ completed
         $this->orderRepository->updateOrderStatus($order, $validatedData['status']);
 
         $payment = $this->orderRepository->updateOrCreatePayment($order->id, [
@@ -448,7 +581,7 @@ class OrderService implements OrderServiceInterface
             'status' => 200
         ];
     }
-    public function cancelDelivery($deliveryId)
+    public function cancelDelivery(int $deliveryId)
     {
         $delivery = $this->orderRepository->findById($deliveryId);
 

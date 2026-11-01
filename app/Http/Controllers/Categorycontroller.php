@@ -22,7 +22,7 @@ class Categorycontroller extends Controller
         ], 200);
     }
 
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         $category = $this->categoryService->getCategoryById($id);
         return response()->json([
@@ -46,7 +46,7 @@ class Categorycontroller extends Controller
         ], 201);
     }
 
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request,int $id): JsonResponse
     {
         $data = $request->only(['name', 'description', 'image']);
         
@@ -58,7 +58,7 @@ class Categorycontroller extends Controller
         ], 200);
     }
     
-    public function destroy($id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         $this->categoryService->deleteCategory($id);
         return response()->json([

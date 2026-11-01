@@ -20,6 +20,8 @@
     use App\Http\Controllers\ExpenseTypeController;
     use App\Http\Controllers\RoleController;
     use App\Http\Controllers\PermissionController;
+    use App\Http\Controllers\ProductpromotionController;
+    use App\Http\Controllers\ExpireProductController;
 
     Route::post('/login-user', [AuthController::class, 'login']);
     Route::get('/auth/users', [AuthController::class, 'index']);
@@ -74,8 +76,23 @@
     Route::get('/products/category/{category_id}', [ProductController::class, 'getCategorybyId']);
     Route::get('/products/brand/{brand_id}', [ProductController::class, 'getProductsByBrandId']);
     Route::get('/products/barcode/{barcode}', [ProductController::class, 'getByBarcode']);
-    // Route::get('/products/id}', [ProductController::class, 'getProductsByid']);
-    // Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
+
+    //promotion
+    Route::get('/product-promotions', [\App\Http\Controllers\ProductpromotionController::class, 'index']);
+    Route::get('/product-promotions/products', [\App\Http\Controllers\ProductpromotionController::class, 'getallproduct']);
+    Route::post('/product-promotions', [\App\Http\Controllers\ProductpromotionController::class, 'store']);
+    Route::get('/product-promotions/{id}', [\App\Http\Controllers\ProductpromotionController::class, 'show']);
+    Route::post('/product-promotions/{id}', [\App\Http\Controllers\ProductpromotionController::class, 'update']);
+    Route::delete('/product-promotions/{id}', [\App\Http\Controllers\ProductpromotionController::class, 'destroy']);
+    Route::post('/product-promotions/{id}/update-active', [ProductpromotionController::class, 'updateActive']);
+    //Expire product
+    Route::get('/expire-products/index', [ExpireProductController::class, 'index']);
+    Route::get('/expire-products', [ExpireProductController::class, 'getExpiringProductsFromTable']);
+    Route::post('/expire-products', [ExpireProductController::class, 'storeExpireProduct']);
+    Route::get('/expire-products/{id}',[ExpireProductController::class,'show']);
+    Route::post('/expire-products/{id}', [ExpireProductController::class, 'update']);
+    Route::get('/products-available-expire', [ExpireProductController::class, 'getAvailableProductsForExpire']);
+    Route::delete('/expire-products/{id}',[ExpireProductController::class, 'destroy']);
 
     Route::get('/brands', [BrandController::class, 'index']);
     Route::get('/brands/{id}', [BrandController::class, 'show']);

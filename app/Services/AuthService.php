@@ -115,9 +115,7 @@ class AuthService implements AuthServiceInterface
         $roleName = $isFirstUser ? 'Supper Admin' : 'Cashier';
 
         $role = \App\Models\Role::where('name', $roleName)->first();
-        $roleId = $role ? $role->id : ($isFirstUser ? 3 : 1); 
-
-        
+        $roleId = $role ? $role->id : ($isFirstUser ? 3 : 1);         
         $user = $this->authRepository->createUser([
             'name' => $userDetails['name'],
             'email' => $userDetails['email'],
@@ -133,6 +131,7 @@ class AuthService implements AuthServiceInterface
 
         return ['token' => $token, 'user' => $user];
     }
+    
     public function refreshToken(User $user): string
     {
         $token = $user->currentAccessToken();

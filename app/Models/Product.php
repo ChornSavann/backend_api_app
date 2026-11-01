@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
+use App\Models\ProductSize;
+use App\Models\Promotion;
 
 class Product extends Model
 {
@@ -35,15 +37,19 @@ class Product extends Model
         if (!$this->image) {
             return null;
         }
-        
+
         if (str_starts_with($this->image, 'http')) {
             return $this->image;
         }
-        
+
         return asset($this->image);
     }
 
-    
+
+    public function sizes()
+    {
+        return $this->hasMany(ProductSize::class);
+    }
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
@@ -61,4 +67,18 @@ class Product extends Model
     protected $casts = [
         'images' => 'array',
     ];
+
+
+    public function promotion()
+    {
+
+        return $this->hasOne(Promotion::class)
+            ->where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('start_date')->orWhere('start_date', '<=', now());
+            })
+            ->where(function ($query) {
+                $query->whereNull('end_date')->orWhere('end_date', '>=', now());
+            });
+    }
 }

@@ -15,7 +15,7 @@ class CategoryService
         return $this->categoryRepository->getAllCategories();
     }
 
-    public function getCategoryById($id)
+    public function getCategoryById(int $id)
     {
         return $this->categoryRepository->getCategoryById($id);
     }
@@ -25,12 +25,12 @@ class CategoryService
         return $this->categoryRepository->createCategory($data);
     }
 
-    public function updateCategory($id, array $data)
+    public function updateCategory(int $id, array $data)
     {
         return $this->categoryRepository->updateCategory($id, $data);
     }
 
-    public function deleteCategory($id)
+    public function deleteCategory(int $id)
     {
         return $this->categoryRepository->deleteCategory($id);
     }
