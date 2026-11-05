@@ -18,4 +18,6 @@ interface AuthServiceInterface
     public function getAllUsers();
     public function getLogs();
     public function getLogDetail(int $id);
+    public function forceLogoutUser(int $id): ?array;
+    public function deleteLog(int $id): array;
 }

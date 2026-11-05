@@ -6,13 +6,12 @@ use App\Services\AuthService;
 use Illuminate\Http\Request;
 use App\Services\Interface\AuthServiceInterface;
 use Illuminate\Validation\ValidationException;
-use App\Models\AuthLog;
 use Illuminate\Http\JsonResponse;
-use Carbon\Carbon;
+
 
 class AuthController extends Controller
 {
-    protected $authService;
+    protected AuthServiceInterface $authService;
 
     public function __construct(AuthServiceInterface $authService)
     {
@@ -53,7 +52,7 @@ class AuthController extends Controller
             ]
         ], 200);
     }
-    
+
     public function createUser(Request $request): jsonResponse
     {
 
@@ -79,6 +78,7 @@ class AuthController extends Controller
             'token' => $newToken,
         ], 200);
     }
+
 
 
     public function login(Request $request): JsonResponse
@@ -117,6 +117,40 @@ class AuthController extends Controller
         ], 200);
     }
 
+  
+
+    public function userProfile(Request $request): JsonResponse
+    {
+        $token = $request->bearerToken();
+        return response()->json([
+            'success' => true,
+            'message' => 'Token is valid',
+            'token' => $token, 
+            'data' => $request->user(), 
+        ], 200);
+    }
+
+    public function adminForceLogout(int $id): JsonResponse
+    {
+        $result = $this->authService->forceLogoutUser($id);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message']
+        ], $result['status']);
+    }
+
+
+    public function deleteloge(int $id): JsonResponse
+    {
+        $result = $this->authService->deleteLog($id);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message']
+        ], $result['status']);
+    }
+
     public function getLogs(): JsonResponse
     {
         $logs = $this->authService->getLogs();
@@ -126,7 +160,8 @@ class AuthController extends Controller
             'data' => $logs
         ], 200);
     }
-    public function getLogDetail($id): jsonResponse
+
+    public function getLogDetail(int $id): jsonResponse
     {
         $log = $this->authService->getLogDetail($id);
 

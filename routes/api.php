@@ -22,12 +22,20 @@
     use App\Http\Controllers\PermissionController;
     use App\Http\Controllers\ProductpromotionController;
     use App\Http\Controllers\ExpireProductController;
+    use App\Http\Controllers\TelegramAuthController;
+
+    Route::post('/telegram/login', [TelegramAuthController::class, 'verifyAndLogin']);
+    
 
     Route::post('/login-user', [AuthController::class, 'login']);
     Route::get('/auth/users', [AuthController::class, 'index']);
     Route::post('/auth/create-user', [AuthController::class, 'createUser']);
+    Route::middleware('auth:sanctum')->get('/user-profile', [AuthController::class, 'userProfile']);
     Route::get('/auth-logs', [AuthController::class, 'getLogs']);
     Route::get('/auth-logs/{id}', [AuthController::class, 'getLogDetail']);
+    Route::post('/users/{id}/force-logout', [AuthController::class, 'adminForceLogout']);
+    Route::delete('/auth-logs/{id}', [AuthController::class, 'deleteloge']);
+    
     // protected route requiring the generated token
     Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         return $request->user();

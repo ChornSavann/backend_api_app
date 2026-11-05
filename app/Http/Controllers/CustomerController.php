@@ -135,7 +135,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function getCustomerOrders($id): JsonResponse
+    public function getCustomerOrders(int $id): JsonResponse
     {
         $data = $this->customerService->getCustomerWithOrders($id);
 

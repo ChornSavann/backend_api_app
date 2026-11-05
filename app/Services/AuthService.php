@@ -167,4 +167,47 @@ class AuthService implements AuthServiceInterface
     {
         return $this->authRepository->getLogDetail($id);
     }
+
+    public function forceLogoutUser(int $id): ?array
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'message' => 'រកមិនឃើញអតិថិជន/យូសែរនេះទេ',
+                'status' => 404
+            ];
+        }
+
+        $this->authRepository->updateOrCreateLatestLogout($user->id);
+        $user->tokens()->delete();
+
+        return [
+            'success' => true,
+            'message' => 'បានបណ្តេញ User នោះចេញពីប្រព័ន្ធដោយជោគជ័យ',
+            'status' => 200
+        ];
+    }
+
+    public function deleteLog(int $id): array
+    {
+        $log = $this->authRepository->findLogById($id);
+
+        if (!$log) {
+            return [
+                'success' => false,
+                'message' => 'Auth log not found',
+                'status' => 404
+            ];
+        }
+
+        $this->authRepository->deleteLog($log);
+
+        return [
+            'success' => true,
+            'message' => 'Auth log deleted successfully',
+            'status' => 200
+        ];
+    }
 }

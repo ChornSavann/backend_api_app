@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 use App\Models\User;
 use App\RepositoryInterface\AuthInterface;
 use App\Models\AuthLog;
-
+use Carbon\Carbon;
 class AuthRepository implements AuthInterface
 {
     public function getAllUsers(): Collection
@@ -35,5 +35,33 @@ class AuthRepository implements AuthInterface
     public function getLogDetail(int $id): AuthLog
     {
         return AuthLog::with('user')->findOrFail($id);
+    }
+
+   public function updateOrCreateLatestLogout(int $userId): void
+    {
+        $latestLog = AuthLog::where('user_id', $userId)->latest('id')->first();
+
+        if ($latestLog) {
+            $latestLog->update([
+                'action' => 'LOGOUT',
+                'timestamp' => Carbon::now(),
+            ]);
+        } else {
+            AuthLog::create([
+                'user_id' => $userId,
+                'action' => 'LOGOUT',
+                'timestamp' => Carbon::now(),
+            ]);
+        }
+    }
+
+    public function findLogById(int $id): ?AuthLog
+    {
+        return AuthLog::find($id);
+    }
+
+    public function deleteLog(AuthLog $log): bool
+    {
+        return $log->delete();
     }
 }

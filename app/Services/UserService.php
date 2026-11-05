@@ -5,6 +5,7 @@ namespace App\Services;
 use App\RepositoryInterface\UserInterface;
 use App\Services\Interface\UserServiceInterface;
 use Illuminate\Http\UploadedFile;
+use App\Models\AuthLog;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
@@ -78,6 +79,7 @@ class UserService implements UserServiceInterface
         if ($user->image && file_exists(public_path($user->image))) {
             @unlink(public_path($user->image));
         }
+        AuthLog::where('user_id', $id)->delete();
         return $this->userRepository->deleteUser($id);
     }
 
