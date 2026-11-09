@@ -26,8 +26,8 @@
 
     Route::post('/telegram/login', [TelegramAuthController::class, 'verifyAndLogin']);
     
-
-    Route::post('/login-user', [AuthController::class, 'login']);
+    Route::post('/login-user', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    
     Route::get('/auth/users', [AuthController::class, 'index']);
     Route::post('/auth/create-user', [AuthController::class, 'createUser']);
     Route::middleware('auth:sanctum')->get('/user-profile', [AuthController::class, 'userProfile']);

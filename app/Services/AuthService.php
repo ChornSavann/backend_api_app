@@ -14,7 +14,7 @@ use App\Services\Interface\AuthServiceInterface;
 
 class AuthService implements AuthServiceInterface
 {
-    protected $authRepository;
+    protected  AuthInterface $authRepository;
 
     public function __construct(AuthInterface $authRepository)
     {
@@ -75,7 +75,11 @@ class AuthService implements AuthServiceInterface
                 'password' => ['The password you entered is incorrect.'],
             ]);
         }
-
+        if (!$user->role_id && !$user->role) {
+            throw ValidationException::withMessages([
+                'email' => ['user របស់អ្នកមិនមានសិទ្ធិប្រើប្រាស់ប្រព័ន្ធនេះទេ (No Role Assigned)។'],
+            ]);
+        }
         $user->tokens()->delete();
 
         AuthLog::updateOrCreate(
@@ -86,10 +90,15 @@ class AuthService implements AuthServiceInterface
             ]
         );
 
-        $token = $user->createToken('login_token')->plainTextToken;
-        $permissions = $user->role && $user->role->permissions
-            ? $user->role->permissions->pluck('name')->toArray()
-            : [];
+        // $token = $user->createToken('login_token')->plainTextToken;
+        $token = $user->createToken('login_token', ['*'], now()->addDays(30))
+        ->plainTextToken;
+        // $permissions = $user->role && $user->role->permissions
+        //     ? $user->role->permissions->pluck('name')->toArray()
+        //     : [];
+        $permissions = $user->role->permissions
+        ? $user->role->permissions->pluck('name')->toArray()
+        : [];
         return [
             'token' => $token,
             'user' => [
@@ -99,7 +108,8 @@ class AuthService implements AuthServiceInterface
                 'phone'       => $user->phone ?? '',
                 'image_url'   => $user->image_url ?? '',
                 'role_id'     => $user->role_id ?? ($user->role ? $user->role->id : null),
-                'role'        => $user->role ? $user->role->name : 'Cashier',
+                // 'role'        => $user->role ? $user->role->name : 'Cashier',
+                'role'        => $user->role ? $user->role->name : 'User',
                 'permissions' => $permissions,
             ],
         ];
@@ -115,14 +125,14 @@ class AuthService implements AuthServiceInterface
         $roleName = $isFirstUser ? 'Supper Admin' : 'Cashier';
 
         $role = \App\Models\Role::where('name', $roleName)->first();
-        $roleId = $role ? $role->id : ($isFirstUser ? 3 : 1);         
+        $roleId = $role ? $role->id : ($isFirstUser ? 3 : 1);
         $user = $this->authRepository->createUser([
             'name' => $userDetails['name'],
             'email' => $userDetails['email'],
             'phone' => $userDetails['phone'] ?? null,
             'image' => $imagePath,
             'password' => Hash::make($userDetails['password']),
-            'role_id' => $roleId, 
+            'role_id' => $roleId,
         ]);
 
         $user->load('role');
@@ -131,7 +141,7 @@ class AuthService implements AuthServiceInterface
 
         return ['token' => $token, 'user' => $user];
     }
-    
+
     public function refreshToken(User $user): string
     {
         $token = $user->currentAccessToken();
