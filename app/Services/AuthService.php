@@ -90,9 +90,9 @@ class AuthService implements AuthServiceInterface
             ]
         );
 
-        // $token = $user->createToken('login_token')->plainTextToken;
-        $token = $user->createToken('login_token', ['*'], now()->addDays(30))
-        ->plainTextToken;
+        $token = $user->createToken('login_token')->plainTextToken;
+        // $token = $user->createToken('login_token', ['*'], now()->addDays(30))
+        // ->plainTextToken;
         // $permissions = $user->role && $user->role->permissions
         //     ? $user->role->permissions->pluck('name')->toArray()
         //     : [];
@@ -108,7 +108,6 @@ class AuthService implements AuthServiceInterface
                 'phone'       => $user->phone ?? '',
                 'image_url'   => $user->image_url ?? '',
                 'role_id'     => $user->role_id ?? ($user->role ? $user->role->id : null),
-                // 'role'        => $user->role ? $user->role->name : 'Cashier',
                 'role'        => $user->role ? $user->role->name : 'User',
                 'permissions' => $permissions,
             ],
